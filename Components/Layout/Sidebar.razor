@@ -1,3 +1,6 @@
+@using sql_editor.Services
+@inject EditorService EditorService
+
 <div class="sidebar">
     <div class="sidebar-header">
         <div class="active-db">
@@ -56,7 +59,7 @@
                                                 {
                                                     @if (obj.IsVisible)
                                                     {
-                                                        <div class="tree-row obj-row">
+                                                        <div class="tree-row obj-row" @ondblclick="() => OpenObjectScript(schema.Name, group.Name, obj.Name)">
                                                             <i class="bi @(group.Name == "Tables" ? "bi-table" : group.Name == "Views" ? "bi-grid-3x3-gap" : "bi-terminal") on-surface-variant"></i>
                                                             <span class="body-md">@obj.Name</span>
                                                         </div>
@@ -92,7 +95,6 @@
 
     private void InitializeData()
     {
-        // Focus on a single database: production_db
         schemas = new List<Node>
         {
             new Node("dbo") {
@@ -138,6 +140,27 @@
     }
 
     private void ToggleNode(Node node) => node.IsExpanded = !node.IsExpanded;
+
+    private void OpenObjectScript(string schema, string group, string name)
+    {
+        string tabName = $"{schema}.{name}.sql";
+        string content = $"-- Script for {group.TrimEnd('s')} {schema}.{name}\n";
+        
+        if (group == "Tables")
+        {
+            content += $"CREATE TABLE [{schema}].[{name}] (\n    [Id] INT PRIMARY KEY IDENTITY(1,1),\n    [CreatedAt] DATETIME2 DEFAULT GETDATE(),\n    [Payload] NVARCHAR(MAX)\n);";
+        }
+        else if (group == "Views")
+        {
+            content += $"CREATE VIEW [{schema}].[{name}] AS\nSELECT * FROM [{schema}].[some_base_table]\nWHERE [IsActive] = 1;";
+        }
+        else
+        {
+            content += $"CREATE PROCEDURE [{schema}].[{name}]\nAS\nBEGIN\n    SET NOCOUNT ON;\n    SELECT 'Executing {name}...';\nEND;";
+        }
+
+        EditorService.AddTab(tabName, content);
+    }
 
     private void FilterTree()
     {

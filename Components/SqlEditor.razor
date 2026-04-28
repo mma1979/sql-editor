@@ -1,8 +1,11 @@
+@using sql_editor.Services
+@inject EditorService EditorService
 @inject IJSRuntime JSRuntime
+@implements IDisposable
 
 <div class="editor-container">
     <div class="tabs">
-        @foreach (var tab in tabs)
+        @foreach (var tab in EditorService.Tabs)
         {
             <div class="tab @(tab.IsActive ? "active" : "")" @onclick="() => SelectTab(tab)">
                 <i class="bi @(tab.Name.EndsWith(".sql") ? "bi-filetype-sql" : "bi-table")"></i>
@@ -45,45 +48,46 @@
         {
             <div class="empty-editor">
                 <i class="bi bi-file-earmark-code" style="font-size: 48px; color: var(--outline-variant)"></i>
-                <span class="body-md on-surface-variant">No files open. Create a new query to begin.</span>
+                <span class="body-md on-surface-variant">No files open. Double-click an object in the explorer to view its script.</span>
             </div>
         }
     </div>
 </div>
 
 @code {
-    private List<EditorTab> tabs = new()
-    {
-        new("query_1.sql", true, "SELECT\n    u.id,\n    u.username,\n    COUNT(e.id) AS total_events,\n    MAX(e.timestamp) AS last_active\nFROM users u\nJOIN events e ON u.id = e.user_id\nWHERE e.status = 'active'\nGROUP BY u.id, u.username\nORDER BY last_active DESC;"),
-        new("analysis_view.sql", false, "-- Write your analysis query here\nSELECT * FROM user_metadata;")
-    };
-
     private bool isCopied = false;
     private ElementReference editorRef;
 
-    private EditorTab? ActiveTab => tabs.FirstOrDefault(t => t.IsActive);
+    private EditorTab? ActiveTab => EditorService.Tabs.FirstOrDefault(t => t.IsActive);
+
+    protected override void OnInitialized()
+    {
+        EditorService.OnChange += StateHasChanged;
+        
+        // Initial tabs if none exist
+        if (!EditorService.Tabs.Any())
+        {
+            EditorService.AddTab("query_1.sql", "SELECT\n    u.id,\n    u.username,\n    COUNT(e.id) AS total_events,\n    MAX(e.timestamp) AS last_active\nFROM users u\nJOIN events e ON u.id = e.user_id\nWHERE e.status = 'active'\nGROUP BY u.id, u.username\nORDER BY last_active DESC;");
+        }
+    }
+
+    public void Dispose() => EditorService.OnChange -= StateHasChanged;
 
     private void SelectTab(EditorTab tab)
     {
-        tabs.ForEach(t => t.IsActive = false);
-        tab.IsActive = true;
+        EditorService.SelectTab(tab);
         isCopied = false;
     }
 
     private void CloseTab(EditorTab tab)
     {
-        tabs.Remove(tab);
-        if (tab.IsActive && tabs.Any())
-        {
-            tabs.Last().IsActive = true;
-        }
+        EditorService.CloseTab(tab);
         isCopied = false;
     }
 
     private void AddTab()
     {
-        tabs.ForEach(t => t.IsActive = false);
-        tabs.Add(new EditorTab($"query_{tabs.Count + 1}.sql", true, "-- New Query"));
+        EditorService.AddTab($"query_{EditorService.Tabs.Count + 1}.sql", "-- New Query");
         isCopied = false;
     }
 
@@ -142,8 +146,6 @@
 
         string code = System.Net.WebUtility.HtmlEncode(ActiveTab.Content);
 
-        // Single-pass regex to avoid matching inside previously added tags
-        // Pattern matches comments, strings, or keywords/functions
         string pattern = @"(?<comment>--.*)|(?<string>'.*?')|(?<keyword>\b(SELECT|FROM|WHERE|JOIN|ON|GROUP\s+BY|ORDER\s+BY|DESC|ASC|AND|OR|IN|AS|LIMIT|UPDATE|SET|DELETE|INSERT|INTO|VALUES|CREATE|TABLE|DATABASE|DROP|ALTER|EXISTS|NOT|NULL|PRIMARY|KEY|FOREIGN|REFERENCES|GO|USE|EXEC|PROCEDURE)\b)|(?<function>\b(COUNT|MAX|MIN|AVG|SUM|GETDATE|CAST|CONVERT|COALESCE)\b)";
         
         string result = System.Text.RegularExpressions.Regex.Replace(code, pattern, m => {
@@ -154,23 +156,9 @@
             return m.Value;
         }, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
-        // Add a space if ends with newline to ensure scrolling/height parity
         if (result.EndsWith("\n")) result += " ";
 
         return new MarkupString(result);
-    }
-
-    public class EditorTab
-    {
-        public string Name { get; set; }
-        public bool IsActive { get; set; }
-        public string Content { get; set; }
-        public EditorTab(string name, bool isActive, string content = "") 
-        {
-            Name = name;
-            IsActive = isActive;
-            Content = content;
-        }
     }
 }
 
@@ -236,7 +224,7 @@
         font-size: 12px;
         line-height: 20px;
         user-select: none;
-        overflow: hidden; /* Scrolled by JS */
+        overflow: hidden;
     }
 
     .code-area-wrapper {
@@ -270,7 +258,7 @@
         z-index: 1;
         pointer-events: none;
         color: var(--on-surface);
-        overflow: hidden; /* Scrolled by JS */
+        overflow: hidden;
     }
 
     .code-editor {
@@ -279,7 +267,6 @@
         caret-color: var(--on-surface);
     }
 
-    /* Highlight Colors - MSSQL Style */
     .hl-keyword { color: #569CD6; font-weight: 600; }
     .hl-string { color: #800000; }
     .hl-comment { color: #6A9955; }
