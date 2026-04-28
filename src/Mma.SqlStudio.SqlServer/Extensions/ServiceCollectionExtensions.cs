@@ -14,7 +14,6 @@ namespace Mma.SqlStudio.SqlServer.Extensions
 
             services.Configure(configureOptions);
 
-            services.AddScoped<EditorService>();
             services.AddScoped<SchemaService>();
 
             return services;
@@ -26,7 +25,6 @@ namespace Mma.SqlStudio.SqlServer.Extensions
 
             services.Configure<SqlStudioOptions>(configuration.GetSection("SqlStudio"));
 
-            services.AddScoped<EditorService>();
             services.AddScoped<SchemaService>();
 
             return services;

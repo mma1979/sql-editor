@@ -4,6 +4,7 @@ using Mma.SqlStudio.SqlServer.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddRazorPages();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -28,9 +29,12 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
+app.MapRazorPages();
+app.MapSqlStudioEndpoints();
+
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(typeof(Mma.SqlStudio.SqlServer.Components.SqlStudio).Assembly);
+    .AddInteractiveServerRenderMode();
 
 
 app.Run();

@@ -8,8 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+builder.Services.AddRazorPages();
 
 builder.Services.AddSqlStudio(options =>
 {
@@ -33,9 +32,7 @@ app.MapStaticAssets();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(typeof(Mma.SqlStudio.SqlServer.Components.SqlStudio).Assembly);
+app.MapRazorPages();
+app.MapSqlStudioEndpoints();
 
 app.Run();
