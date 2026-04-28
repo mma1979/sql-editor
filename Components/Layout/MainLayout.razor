@@ -1,0 +1,43 @@
+@inherits LayoutComponentBase
+
+<div class="page">
+    <div class="top-bar">
+        <div class="brand">
+            <span class="logo"></span>
+            <span class="app-name">SQL Studio Pro</span>
+        </div>
+        <nav class="top-nav">
+            <a href="#">Query</a>
+            <a href="#">Database</a>
+            <a href="#">View</a>
+            <a href="#">Tools</a>
+        </nav>
+        <div class="top-actions">
+            <button class="primary"><i class="bi bi-play-fill"></i> Run</button>
+            <button class="secondary">Save</button>
+            <div class="separator"></div>
+            <i class="bi bi-download action-icon"></i>
+            <i class="bi bi-clock-history action-icon"></i>
+            <i class="bi bi-gear action-icon"></i>
+        </div>
+    </div>
+
+    <main>
+        @Body
+    </main>
+
+    <div class="status-bar">
+        <div class="status-left">
+            <span class="status-item"><i class="bi bi-database"></i> Connected: db-prod-cluster-01</span>
+            <span class="status-item">PostgreSQL 15.4</span>
+        </div>
+        <div class="status-right">
+            <span class="status-item">UTF-8</span>
+            <span class="status-item">ROW: 1, COL: 1</span>
+            <span class="status-item">LN 9, COL 24</span>
+        </div>
+    </div>
+</div>
+
+@code {
+}

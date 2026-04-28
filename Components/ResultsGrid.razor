@@ -1,0 +1,144 @@
+<div class="results-container">
+    <div class="results-header">
+        <div class="header-left">
+            <span class="label-sm">QUERY RESULTS</span>
+            <span class="on-surface-variant label-sm" style="margin-left: 12px;">1,248 rows in 42ms</span>
+        </div>
+        <div class="header-right">
+            <div class="action-item"><i class="bi bi-box-arrow-up"></i> Export <i class="bi bi-caret-down-fill" style="font-size: 8px"></i></div>
+            <i class="bi bi-filter"></i>
+            <i class="bi bi-x-lg"></i>
+        </div>
+    </div>
+    
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>name</th>
+                    <th>timestamp</th>
+                    <th>status</th>
+                </tr>
+            </thead>
+            <tbody class="code-md">
+                @foreach (var row in data)
+                {
+                    <tr>
+                        <td>@row.Id</td>
+                        <td>@row.Name</td>
+                        <td>@row.Timestamp</td>
+                        <td class="status-cell">
+                            <span class="status-dot @row.Status.ToLower()"></span>
+                            @row.Status
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<ResultRow> data = new()
+    {
+        new(1042, "production_load_balancer_01", "2023-10-24 14:22:01", "ACTIVE"),
+        new(1043, "auth_gateway_lambda_eu", "2023-10-24 14:21:55", "ACTIVE"),
+        new(1044, "database_sync_worker", "2023-10-24 14:19:30", "PENDING"),
+        new(1045, "legacy_connector_v2", "2023-10-24 14:18:12", "FAILED"),
+        new(1046, "user_notification_service", "2023-10-24 14:15:00", "ACTIVE"),
+        new(1047, "asset_optimization_pipeline", "2023-10-24 14:12:44", "ACTIVE"),
+    };
+
+    public record ResultRow(int Id, string Name, string Timestamp, string Status);
+}
+
+<style>
+    .results-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        background-color: var(--surface-container-lowest);
+        border-top: 2px solid var(--outline-variant);
+    }
+
+    .results-header {
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        background-color: var(--surface-container-low);
+        border-bottom: 1px solid var(--outline-variant);
+        flex-shrink: 0;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        color: var(--on-surface-variant);
+    }
+
+    .action-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .table-scroll {
+        flex: 1;
+        overflow: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        color: var(--on-surface);
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+        background-color: var(--surface-container-low);
+        text-align: left;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--on-surface-variant);
+        border-bottom: 1px solid var(--outline-variant);
+        z-index: 2;
+    }
+
+    td {
+        padding: 6px 12px;
+        border-bottom: 1px solid var(--outline-variant);
+        font-size: 13px;
+    }
+
+    tr:hover {
+        background-color: var(--surface-container-high);
+    }
+
+    .status-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-transform: uppercase;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+
+    .active { background-color: #4CAF50; }
+    .pending { background-color: #FFCA28; }
+    .failed { background-color: #F44336; }
+</style>

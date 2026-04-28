@@ -1,0 +1,197 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+        <span class="label-sm">Explorer</span>
+        <span class="header-actions">
+            <i class="bi bi-filter"></i>
+        </span>
+    </div>
+    
+    <div class="sidebar-content">
+        <div class="tree-item">
+            <div class="tree-row" @onclick="ToggleDatabases">
+                <i class="bi bi-caret-@(isDatabasesExpanded ? "down" : "right")-fill caret"></i>
+                <i class="bi bi-database action-blue"></i>
+                <span class="body-md">Databases</span>
+            </div>
+            @if (isDatabasesExpanded)
+            {
+                <div class="tree-children">
+                    <div class="tree-item">
+                        <div class="tree-row @(isTablesActive ? "active" : "")" @onclick="ToggleTables">
+                            <i class="bi bi-caret-@(isTablesExpanded ? "down" : "right")-fill caret"></i>
+                            <i class="bi bi-folder-fill" style="color: #FFCA28"></i>
+                            <span class="body-md">Tables</span>
+                        </div>
+                        @if (isTablesExpanded)
+                        {
+                            <div class="tree-children">
+                                <div class="tree-row">
+                                    <i class="bi bi-table on-surface-variant"></i>
+                                    <span class="body-md">analytics_events</span>
+                                </div>
+                                <div class="tree-row">
+                                    <i class="bi bi-table on-surface-variant"></i>
+                                    <span class="body-md">user_metadata</span>
+                                </div>
+                                <div class="tree-row">
+                                    <i class="bi bi-table on-surface-variant"></i>
+                                    <span class="body-md">transaction_logs</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="tree-item">
+                        <div class="tree-row" @onclick="ToggleViews">
+                            <i class="bi bi-caret-@(isViewsExpanded ? "down" : "right")-fill caret"></i>
+                            <i class="bi bi-layout-sidebar-inset" style="color: #4CAF50"></i>
+                            <span class="body-md">Views</span>
+                        </div>
+                        @if (isViewsExpanded)
+                        {
+                            <div class="tree-children">
+                                <div class="tree-row">
+                                    <i class="bi bi-grid-3x3-gap on-surface-variant"></i>
+                                    <span class="body-md">active_users_view</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="tree-item">
+                        <div class="tree-row" @onclick="ToggleProcs">
+                            <i class="bi bi-caret-@(isProcsExpanded ? "down" : "right")-fill caret"></i>
+                            <i class="bi bi-cpu" style="color: #9C27B0"></i>
+                            <span class="body-md">Stored Procedures</span>
+                        </div>
+                        @if (isProcsExpanded)
+                        {
+                            <div class="tree-children">
+                                <div class="tree-row">
+                                    <i class="bi bi-terminal on-surface-variant"></i>
+                                    <span class="body-md">sync_user_data</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="sidebar-section">
+            <div class="tree-row">
+                <i class="bi bi-search"></i>
+                <span class="body-md">Search</span>
+            </div>
+            <div class="tree-row">
+                <i class="bi bi-clock-history"></i>
+                <span class="body-md">History</span>
+            </div>
+            <div class="tree-row">
+                <i class="bi bi-star"></i>
+                <span class="body-md">Favorites</span>
+            </div>
+            <div class="tree-row">
+                <i class="bi bi-diagram-3"></i>
+                <span class="body-md">Connections</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="sidebar-footer">
+        <div class="tree-row">
+            <i class="bi bi-gear"></i>
+            <span class="body-md">Settings</span>
+        </div>
+        <div class="tree-row">
+            <i class="bi bi-question-circle"></i>
+            <span class="body-md">Help</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isDatabasesExpanded = true;
+    private bool isTablesExpanded = true;
+    private bool isViewsExpanded = false;
+    private bool isProcsExpanded = false;
+    private bool isTablesActive = true;
+
+    private void ToggleDatabases() => isDatabasesExpanded = !isDatabasesExpanded;
+    private void ToggleTables() => isTablesExpanded = !isTablesExpanded;
+    private void ToggleViews() => isViewsExpanded = !isViewsExpanded;
+    private void ToggleProcs() => isProcsExpanded = !isProcsExpanded;
+}
+
+<style>
+    .sidebar {
+        width: 260px;
+        background-color: var(--surface-container-low);
+        border-right: 1px solid var(--outline-variant);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        flex-shrink: 0;
+    }
+
+    .sidebar-header {
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        border-bottom: 1px solid var(--outline-variant);
+        color: var(--on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0;
+    }
+
+    .tree-row {
+        height: 28px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tree-row:hover {
+        background-color: var(--surface-container-high);
+    }
+
+    .tree-row.active {
+        background-color: var(--surface-container-highest);
+        border-left: 2px solid var(--primary-container);
+        padding-left: 10px;
+    }
+
+    .tree-children {
+        padding-left: 12px;
+    }
+
+    .caret {
+        font-size: 10px;
+        width: 12px;
+        color: var(--on-surface-variant);
+    }
+
+    .sidebar-section {
+        margin-top: 16px;
+        border-top: 1px solid var(--outline-variant);
+        padding-top: 8px;
+    }
+
+    .sidebar-footer {
+        border-top: 1px solid var(--outline-variant);
+        padding: 8px 0;
+        background-color: var(--surface-container-lowest);
+    }
+</style>

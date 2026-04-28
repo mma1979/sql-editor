@@ -1,0 +1,227 @@
+<div class="editor-container">
+    <div class="tabs">
+        @foreach (var tab in tabs)
+        {
+            <div class="tab @(tab.IsActive ? "active" : "")" @onclick="() => SelectTab(tab)">
+                <i class="bi @(tab.Name.EndsWith(".sql") ? "bi-filetype-sql" : "bi-table")"></i>
+                <span>@tab.Name</span>
+                <i class="bi bi-x close-btn" @onclick:stopPropagation="true" @onclick="() => CloseTab(tab)"></i>
+            </div>
+        }
+        <div class="add-tab" @onclick="AddTab">
+            <i class="bi bi-plus"></i>
+        </div>
+    </div>
+    
+    <div class="editor-pane">
+        @if (ActiveTab != null)
+        {
+            <div class="line-numbers">
+                @for (int i = 1; i <= Math.Max(9, ActiveTab.Content.Split('\n').Length); i++)
+                {
+                    <div class="line-no">@i</div>
+                }
+            </div>
+            <div class="code-area">
+                <textarea @key="ActiveTab.Name"
+                          class="code-editor code-md" 
+                          spellcheck="false" 
+                          @bind="ActiveTab.Content"
+                          @bind:event="oninput"></textarea>
+            </div>
+            
+            <div class="editor-actions">
+                <button class="secondary"><i class="bi bi-text-left"></i> Format</button>
+                <button class="secondary"><i class="bi bi-copy"></i> Copy</button>
+            </div>
+        }
+        else
+        {
+            <div class="empty-editor">
+                <i class="bi bi-file-earmark-code" style="font-size: 48px; color: var(--outline-variant)"></i>
+                <span class="body-md on-surface-variant">No files open. Create a new query to begin.</span>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<EditorTab> tabs = new()
+    {
+        new("query_1.sql", true, "SELECT\n    u.id,\n    u.username,\n    count(e.id) AS total_events,\n    max(e.timestamp) AS last_active\nFROM users u\nJOIN events e ON u.id = e.user_id\nWHERE e.status = 'active'\nGROUP BY u.id, u.username\nORDER BY last_active DESC;"),
+        new("analysis_view.sql", false, "-- Write your analysis query here")
+    };
+
+    private EditorTab? ActiveTab => tabs.FirstOrDefault(t => t.IsActive);
+
+    private void SelectTab(EditorTab tab)
+    {
+        tabs.ForEach(t => t.IsActive = false);
+        tab.IsActive = true;
+    }
+
+    private void CloseTab(EditorTab tab)
+    {
+        tabs.Remove(tab);
+        if (tab.IsActive && tabs.Any())
+        {
+            tabs.Last().IsActive = true;
+        }
+    }
+
+    private void AddTab()
+    {
+        tabs.ForEach(t => t.IsActive = false);
+        tabs.Add(new EditorTab($"query_{tabs.Count + 1}.sql", true, "-- New Query"));
+    }
+
+    public class EditorTab
+    {
+        public string Name { get; set; }
+        public bool IsActive { get; set; }
+        public string Content { get; set; }
+        public EditorTab(string name, bool isActive, string content = "") 
+        {
+            Name = name;
+            IsActive = isActive;
+            Content = content;
+        }
+    }
+}
+
+<style>
+    .editor-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        background-color: var(--surface);
+    }
+
+    .tabs {
+        height: 36px;
+        background-color: var(--surface-container-lowest);
+        display: flex;
+        align-items: flex-end;
+        border-bottom: 1px solid var(--outline-variant);
+        overflow-x: auto;
+    }
+
+    .tabs::-webkit-scrollbar {
+        height: 2px;
+    }
+
+    .tab {
+        height: 32px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background-color: var(--surface-container-low);
+        border: 1px solid var(--outline-variant);
+        border-bottom: none;
+        border-radius: 4px 4px 0 0;
+        margin-right: 2px;
+        cursor: pointer;
+        font-size: 13px;
+        color: var(--on-surface-variant);
+        white-space: nowrap;
+        position: relative;
+    }
+
+    .tab.active {
+        background-color: var(--surface);
+        color: var(--on-surface);
+        border-bottom: 2px solid var(--primary-container);
+        height: 33px;
+        z-index: 1;
+    }
+
+    .close-btn {
+        font-size: 14px;
+        padding: 2px;
+        border-radius: 4px;
+        opacity: 0.6;
+    }
+
+    .close-btn:hover {
+        background-color: var(--surface-container-high);
+        opacity: 1;
+    }
+
+    .add-tab {
+        padding: 0 12px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        color: var(--on-surface-variant);
+    }
+
+    .add-tab:hover {
+        color: var(--on-surface);
+        background-color: var(--surface-container-low);
+    }
+
+    .editor-pane {
+        flex: 1;
+        display: flex;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .empty-editor {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .line-numbers {
+        width: 40px;
+        background-color: var(--surface-container-lowest);
+        border-right: 1px solid var(--outline-variant);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        padding: 16px 8px;
+        color: var(--outline);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        user-select: none;
+        overflow: hidden;
+    }
+
+    .line-no {
+        height: 20px;
+    }
+
+    .code-area {
+        flex: 1;
+        display: flex;
+        background-color: var(--surface);
+    }
+
+    .code-editor {
+        flex: 1;
+        background: transparent;
+        color: var(--on-surface);
+        border: none;
+        outline: none;
+        padding: 16px;
+        resize: none;
+        white-space: pre;
+        overflow: auto;
+        line-height: 20px;
+    }
+
+    .editor-actions {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: flex;
+        gap: 8px;
+    }
+</style>
