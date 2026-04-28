@@ -1,56 +1,124 @@
+@using sql_editor.Services
+@inject EditorService EditorService
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
 <div class="results-container">
     <div class="results-header">
         <div class="header-left">
-            <span class="label-sm">QUERY RESULTS</span>
-            <span class="on-surface-variant label-sm" style="margin-left: 12px;">1,248 rows in 42ms</span>
+            <span class="label-sm">RESULTS</span>
+            @if (EditorService.LastResult != null)
+            {
+                <span class="badge @(EditorService.LastResult.Success ? "success" : "error")">
+                    @(EditorService.LastResult.Success ? "Success" : "Error")
+                </span>
+                <span class="message-sm">@EditorService.LastResult.Message</span>
+            }
         </div>
         <div class="header-right">
-            <div class="action-item"><i class="bi bi-box-arrow-up"></i> Export <i class="bi bi-caret-down-fill" style="font-size: 8px"></i></div>
-            <i class="bi bi-filter"></i>
-            <i class="bi bi-x-lg"></i>
+            @if (EditorService.LastResult != null && EditorService.LastResult.Success && EditorService.LastResult.Rows.Any())
+            {
+                <button class="ghost-sm" @onclick="ExportToCsv"><i class="bi bi-download"></i> Export CSV</button>
+            }
         </div>
     </div>
     
-    <div class="table-scroll">
-        <table>
-            <thead>
-                <tr>
-                    <th>id</th>
-                    <th>name</th>
-                    <th>timestamp</th>
-                    <th>status</th>
-                </tr>
-            </thead>
-            <tbody class="code-md">
-                @foreach (var row in data)
-                {
+    <div class="grid-wrapper">
+        @if (EditorService.IsExecuting)
+        {
+            <div class="grid-overlay">
+                <div class="spinner"></div>
+                <span>Executing query...</span>
+            </div>
+        }
+        
+        @if (EditorService.LastResult != null && EditorService.LastResult.Success)
+        {
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <td>@row.Id</td>
-                        <td>@row.Name</td>
-                        <td>@row.Timestamp</td>
-                        <td class="status-cell">
-                            <span class="status-dot @row.Status.ToLower()"></span>
-                            @row.Status
-                        </td>
+                        <th class="row-no">#</th>
+                        @foreach (var col in EditorService.LastResult.Columns)
+                        {
+                            <th>@col</th>
+                        }
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < EditorService.LastResult.Rows.Count; i++)
+                    {
+                        var row = EditorService.LastResult.Rows[i];
+                        <tr>
+                            <td class="row-no">@(i + 1)</td>
+                            @foreach (var cell in row)
+                            {
+                                <td>@cell</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else if (EditorService.LastResult != null && !EditorService.LastResult.Success)
+        {
+            <div class="error-panel">
+                <i class="bi bi-x-circle"></i>
+                <pre>@EditorService.LastResult.Message</pre>
+            </div>
+        }
+        else if (!EditorService.IsExecuting)
+        {
+            <div class="empty-results">
+                <i class="bi bi-table"></i>
+                <span>No results to display. Run a query to see data.</span>
+            </div>
+        }
     </div>
 </div>
 
 @code {
-    private List<ResultRow> data = new()
+    protected override void OnInitialized()
     {
-        new(1042, "production_load_balancer_01", "2023-10-24 14:22:01", "ACTIVE"),
-        new(1043, "auth_gateway_lambda_eu", "2023-10-24 14:21:55", "ACTIVE"),
-        new(1044, "database_sync_worker", "2023-10-24 14:19:30", "PENDING"),
-        new(1045, "legacy_connector_v2", "2023-10-24 14:18:12", "FAILED"),
-        new(1046, "user_notification_service", "2023-10-24 14:15:00", "ACTIVE"),
-        new(1047, "asset_optimization_pipeline", "2023-10-24 14:12:44", "ACTIVE"),
-    };
+        EditorService.OnChange += StateHasChanged;
+    }
 
-    public record ResultRow(int Id, string Name, string Timestamp, string Status);
+    public void Dispose()
+    {
+        EditorService.OnChange -= StateHasChanged;
+    }
+
+    private async Task ExportToCsv()
+    {
+        if (EditorService.LastResult == null) return;
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine(string.Join(",", EditorService.LastResult.Columns.Select(c => $"\"{c.Replace("\"", "\"\"")}\"")));
+
+        foreach (var row in EditorService.LastResult.Rows)
+        {
+            sb.AppendLine(string.Join(",", row.Select(r => $"\"{r.Replace("\"", "\"\"")}\"")));
+        }
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
+        var fileName = $"query_export_{DateTime.Now:yyyyMMddHHmmss}.csv";
+        
+        await JSRuntime.InvokeVoidAsync("eval", @"
+            window.downloadFile = (fileName, content) => {
+                const blob = new Blob([content], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            };
+        ");
+        
+        await JSRuntime.InvokeVoidAsync("downloadFile", fileName, sb.ToString());
+    }
 }
 
 <style>
@@ -58,87 +126,130 @@
         display: flex;
         flex-direction: column;
         height: 100%;
-        width: 100%;
-        background-color: var(--surface-container-lowest);
-        border-top: 2px solid var(--outline-variant);
+        background-color: var(--surface);
     }
 
     .results-header {
         height: 36px;
+        background-color: var(--surface-container-low);
+        border-bottom: 1px solid var(--outline-variant);
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 0 12px;
-        background-color: var(--surface-container-low);
-        border-bottom: 1px solid var(--outline-variant);
-        flex-shrink: 0;
     }
 
-    .header-right {
+    .header-left {
         display: flex;
         align-items: center;
-        gap: 16px;
-        color: var(--on-surface-variant);
+        gap: 12px;
     }
 
-    .action-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        cursor: pointer;
-    }
-
-    .table-scroll {
+    .grid-wrapper {
         flex: 1;
         overflow: auto;
+        position: relative;
     }
 
-    table {
+    .data-table {
         width: 100%;
         border-collapse: collapse;
-        color: var(--on-surface);
+        font-family: var(--font-mono);
+        font-size: 12px;
     }
 
-    th {
+    .data-table thead th {
         position: sticky;
         top: 0;
-        background-color: var(--surface-container-low);
+        background-color: var(--surface-container-high);
+        color: var(--on-surface-variant);
         text-align: left;
         padding: 8px 12px;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--on-surface-variant);
-        border-bottom: 1px solid var(--outline-variant);
-        z-index: 2;
+        border-right: 1px solid var(--outline-variant);
+        border-bottom: 2px solid var(--outline-variant);
+        white-space: nowrap;
+        z-index: 10;
     }
 
-    td {
+    .data-table tbody td {
         padding: 6px 12px;
+        border-right: 1px solid var(--outline-variant);
         border-bottom: 1px solid var(--outline-variant);
+        color: var(--on-surface);
+        white-space: nowrap;
+    }
+
+    .data-table tr:hover {
+        background-color: var(--surface-container-low);
+    }
+
+    .row-no {
+        width: 40px;
+        text-align: center !important;
+        background-color: var(--surface-container-lowest);
+        color: var(--outline);
+        font-weight: normal;
+    }
+
+    .badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .badge.success { background-color: rgba(76, 175, 80, 0.2); color: #81C784; }
+    .badge.error { background-color: rgba(244, 67, 54, 0.2); color: #E57373; }
+
+    .message-sm { font-size: 12px; color: var(--on-surface-variant); }
+
+    .error-panel {
+        padding: 24px;
+        color: #E57373;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .error-panel pre {
+        white-space: pre-wrap;
+        font-family: var(--font-mono);
         font-size: 13px;
     }
 
-    tr:hover {
-        background-color: var(--surface-container-high);
-    }
-
-    .status-cell {
+    .grid-overlay {
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 8px;
-        text-transform: uppercase;
-        font-size: 11px;
-        font-weight: 600;
+        justify-content: center;
+        gap: 16px;
+        z-index: 20;
+        backdrop-filter: blur(2px);
     }
 
-    .status-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
+    .empty-results {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        color: var(--outline);
     }
 
-    .active { background-color: #4CAF50; }
-    .pending { background-color: #FFCA28; }
-    .failed { background-color: #F44336; }
+    .ghost-sm {
+        background: transparent;
+        border: none;
+        color: var(--primary);
+        font-size: 12px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .ghost-sm:hover { background: rgba(var(--primary-rgb), 0.1); }
 </style>

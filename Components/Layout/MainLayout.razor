@@ -1,4 +1,6 @@
 @inherits LayoutComponentBase
+@inject sql_editor.Services.SchemaService SchemaService
+@inject sql_editor.Services.EditorService EditorService
 
 <div class="page">
     <div class="top-bar">
@@ -8,7 +10,11 @@
         </div>
         <div class="top-actions">
             <button class="primary" @onclick="ShowConnect"><i class="bi bi-plug-fill"></i> Connect</button>
-            <button class="primary"><i class="bi bi-play-fill"></i> Run</button>
+            <button class="primary" @onclick="ExecuteActiveQuery" disabled="@EditorService.IsExecuting">
+                @if (EditorService.IsExecuting) { <span class="spinner-border spinner-border-sm mr-2"></span> }
+                else { <i class="bi bi-play-fill"></i> }
+                Run
+            </button>
             <button class="secondary">Save</button>
             <div class="separator"></div>
             <i class="bi bi-download action-icon"></i>
@@ -24,12 +30,12 @@
     <div class="status-bar">
         <div class="status-left">
             <span class="status-item"><i class="bi bi-database"></i> @currentConnection</span>
-            <span class="status-item">PostgreSQL 15.4</span>
+            <span class="status-item">MSSQL Server</span>
         </div>
         <div class="status-right">
             <span class="status-item">UTF-8</span>
-            <span class="status-item">ROW: 1, COL: 1</span>
-            <span class="status-item">LN 9, COL 24</span>
+            <span class="status-item">@((EditorService.LastResult?.Rows.Count ?? 0)) Rows</span>
+            <span class="status-item">@(EditorService.IsExecuting ? "EXECUTING..." : "READY")</span>
         </div>
     </div>
 </div>
@@ -38,13 +44,27 @@
 
 @code {
     private bool isConnectVisible = false;
-    private string currentConnection = "Connected: db-prod-cluster-01";
+    private string currentConnection = "Connected: LandFeesDB";
+
+    protected override void OnInitialized()
+    {
+        EditorService.OnChange += StateHasChanged;
+    }
 
     private void ShowConnect() => isConnectVisible = true;
 
+    private async Task ExecuteActiveQuery()
+    {
+        var activeTab = EditorService.Tabs.FirstOrDefault(t => t.IsActive);
+        if (activeTab == null || string.IsNullOrWhiteSpace(activeTab.Content)) return;
+
+        EditorService.SetExecuting(true);
+        var result = await SchemaService.ExecuteQueryAsync(activeTab.Content);
+        EditorService.SetResult(result);
+    }
+
     private void HandleConnected(string connectionString)
     {
-        // For demonstration, we just update the status bar
         currentConnection = "Connected: " + (connectionString.Length > 20 ? connectionString.Substring(0, 20) + "..." : connectionString);
     }
 }

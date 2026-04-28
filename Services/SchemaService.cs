@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -82,10 +83,34 @@ namespace sql_editor.Services
             }
             catch
             {
-                // Return empty list on failure for mock-up safety, 
-                // but in real app we'd handle/log the error.
                 return new List<SchemaNode>();
             }
+        }
+
+        public async Task<QueryResult> ExecuteQueryAsync(string sql)
+        {
+            var result = new QueryResult();
+            try
+            {
+                using IDbConnection db = new SqlConnection(GetConnectionString());
+                var reader = await db.ExecuteReaderAsync(sql);
+                var dt = new DataTable();
+                dt.Load(reader);
+
+                result.Columns = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
+                foreach (DataRow row in dt.Rows)
+                {
+                    result.Rows.Add(row.ItemArray.Select(i => i?.ToString() ?? "NULL").ToList());
+                }
+                result.Success = true;
+                result.Message = $"{dt.Rows.Count} rows affected.";
+            }
+            catch (Exception ex)
+            {
+                result.Success = false;
+                result.Message = ex.Message;
+            }
+            return result;
         }
 
         private class SchemaItem
@@ -111,5 +136,13 @@ namespace sql_editor.Services
             Name = name;
             Objects = objects;
         }
+    }
+
+    public class QueryResult
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public List<string> Columns { get; set; } = new();
+        public List<List<string>> Rows { get; set; } = new();
     }
 }
