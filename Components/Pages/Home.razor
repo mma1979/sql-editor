@@ -1,20 +1,181 @@
 @page "/"
 @using Mma.SqlStudio.SqlServer.Components
 @using Mma.SqlStudio.SqlServer.Components.Layout
+@inject Mma.SqlStudio.SqlServer.Services.SchemaService SchemaService
+@inject Mma.SqlStudio.SqlServer.Services.EditorService EditorService
+@inject IJSRuntime JSRuntime
 
-<div class="workspace">
-    <Sidebar />
-    <div class="main-content">
-        <div class="editor-section">
-            <SqlEditor />
+<div class="page">
+    <div class="top-bar">
+        <div class="brand">
+            <span class="logo"></span>
+            <span class="app-name">SQL Studio Pro</span>
         </div>
-        <div class="results-section">
-            <ResultsGrid />
+        <div class="top-actions">
+            <button class="primary" @onclick="ExecuteActiveQuery" disabled="@EditorService.IsExecuting">
+                @if (EditorService.IsExecuting) { <span class="spinner-border spinner-border-sm mr-2"></span> }
+                else { <i class="bi bi-play-fill"></i> }
+                Run
+            </button>
+            <button class="secondary" @onclick="SaveActiveTab"><i class="bi bi-download"></i> Save</button>
+        </div>
+    </div>
+
+    <main>
+        <div class="workspace">
+            <Sidebar />
+            <div class="main-content">
+                <div class="editor-section">
+                    <SqlEditor />
+                </div>
+                <div class="results-section">
+                    <ResultsGrid />
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="status-bar">
+        <div class="status-left">
+            <span class="status-item"><i class="bi bi-database"></i> @currentConnection</span>
+            <span class="status-item">MSSQL Server</span>
+        </div>
+        <div class="status-right">
+            <span class="status-item">UTF-8</span>
+            <span class="status-item">@((EditorService.LastResult?.Rows.Count ?? 0)) Rows</span>
+            <span class="status-item">@(EditorService.IsExecuting ? "EXECUTING..." : "READY")</span>
         </div>
     </div>
 </div>
 
+<ConnectionDialog @bind-Visible="isConnectVisible" OnConnected="HandleConnected" />
+
+@code {
+    private bool isConnectVisible = false;
+    private string currentConnection = "Connected: LandFeesDB";
+
+    protected override void OnInitialized()
+    {
+        EditorService.OnChange += StateHasChanged;
+    }
+
+
+    private async Task ExecuteActiveQuery()
+    {
+        var activeTab = EditorService.Tabs.FirstOrDefault(t => t.IsActive);
+        if (activeTab == null || string.IsNullOrWhiteSpace(activeTab.Content)) return;
+
+        EditorService.SetExecuting(true);
+        var result = await SchemaService.ExecuteQueryAsync(activeTab.Content);
+        EditorService.SetResult(result);
+    }
+
+    private void HandleConnected(string connectionString)
+    {
+        currentConnection = "Connected: " + (connectionString.Length > 20 ? connectionString.Substring(0, 20) + "..." : connectionString);
+    }
+
+    private async Task SaveActiveTab()
+    {
+        var activeTab = EditorService.Tabs.FirstOrDefault(t => t.IsActive);
+        if (activeTab == null || string.IsNullOrWhiteSpace(activeTab.Content)) return;
+
+        var filename = activeTab.Name;
+        if (!filename.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
+        {
+            filename += ".sql";
+        }
+
+        await JSRuntime.InvokeVoidAsync("downloadFile", filename, activeTab.Content);
+    }
+}
+
 <style>
+    .page {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+        background-color: var(--surface);
+    }
+
+    .top-bar {
+        height: 48px;
+        background-color: var(--surface-container-lowest);
+        border-bottom: 1px solid var(--outline-variant);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 24px;
+        flex-shrink: 0;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .app-name {
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--on-surface);
+    }
+
+    .top-actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .action-icon {
+        color: var(--on-surface-variant);
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .action-icon:hover {
+        color: var(--on-surface);
+    }
+
+    .separator {
+        width: 1px;
+        height: 24px;
+        background-color: var(--outline-variant);
+        margin: 0 4px;
+    }
+
+    main {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+    }
+
+    .status-bar {
+        height: 24px;
+        background-color: var(--surface-container-lowest);
+        border-top: 1px solid var(--outline-variant);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 12px;
+        font-size: 11px;
+        color: var(--on-surface-variant);
+        flex-shrink: 0;
+    }
+
+    .status-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 8px;
+    }
+
+    .status-left, .status-right {
+        display: flex;
+    }
+
     .workspace {
         display: flex;
         width: 100%;
@@ -30,7 +191,7 @@
     }
 
     .editor-section {
-        flex: 3; /* Give more space to editor */
+        flex: 3;
         min-height: 200px;
         overflow: hidden;
     }
