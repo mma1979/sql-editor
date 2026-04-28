@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Dapper;
 using Microsoft.Extensions.Options;
-using sql_editor.Models;
+using Mma.SqlStudio.SqlServer.Models;
 
-namespace sql_editor.Services
+namespace Mma.SqlStudio.SqlServer.Services
 {
     public class SchemaService
     {

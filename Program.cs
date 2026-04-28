@@ -1,13 +1,13 @@
-using sql_editor.Components;
+using Mma.SqlStudio.SqlServer.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddScoped<sql_editor.Services.EditorService>();
-builder.Services.Configure<sql_editor.Models.SqlStudioOptions>(builder.Configuration.GetSection("SqlStudio"));
-builder.Services.AddScoped<sql_editor.Services.SchemaService>();
+builder.Services.AddScoped<Mma.SqlStudio.SqlServer.Services.EditorService>();
+builder.Services.Configure<Mma.SqlStudio.SqlServer.Models.SqlStudioOptions>(builder.Configuration.GetSection("SqlStudio"));
+builder.Services.AddScoped<Mma.SqlStudio.SqlServer.Services.SchemaService>();
 
 var app = builder.Build();
 

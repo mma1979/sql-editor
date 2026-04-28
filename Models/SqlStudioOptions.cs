@@ -1,4 +1,4 @@
-namespace sql_editor.Models
+namespace Mma.SqlStudio.SqlServer.Models
 {
     public class SqlStudioOptions
     {

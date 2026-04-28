@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace sql_editor.Services
+namespace Mma.SqlStudio.SqlServer.Services
 {
     public class EditorService
     {
