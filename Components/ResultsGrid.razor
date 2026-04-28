@@ -16,7 +16,7 @@
             }
         </div>
         <div class="header-right">
-            @if (EditorService.LastResult != null && EditorService.LastResult.Success && EditorService.LastResult.Rows.Any())
+            @if (EditorService.LastResult != null && EditorService.LastResult.Success && EditorService.LastResult.IsQuery && EditorService.LastResult.Rows.Any())
             {
                 <button class="ghost-sm" @onclick="ExportToCsv"><i class="bi bi-download"></i> Export CSV</button>
             }
@@ -28,36 +28,49 @@
         {
             <div class="grid-overlay">
                 <div class="spinner"></div>
-                <span>Executing query...</span>
+                <span>Executing command...</span>
             </div>
         }
         
         @if (EditorService.LastResult != null && EditorService.LastResult.Success)
         {
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th class="row-no">#</th>
-                        @foreach (var col in EditorService.LastResult.Columns)
-                        {
-                            <th>@col</th>
-                        }
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (int i = 0; i < EditorService.LastResult.Rows.Count; i++)
-                    {
-                        var row = EditorService.LastResult.Rows[i];
+            @if (EditorService.LastResult.IsQuery)
+            {
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <td class="row-no">@(i + 1)</td>
-                            @foreach (var cell in row)
+                            <th class="row-no">#</th>
+                            @foreach (var col in EditorService.LastResult.Columns)
                             {
-                                <td>@cell</td>
+                                <th>@col</th>
                             }
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < EditorService.LastResult.Rows.Count; i++)
+                        {
+                            var row = EditorService.LastResult.Rows[i];
+                            <tr>
+                                <td class="row-no">@(i + 1)</td>
+                                @foreach (var cell in row)
+                                {
+                                    <td>@cell</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="non-query-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <div class="details">
+                        <span class="headline-sm">Command completed successfully</span>
+                        <span class="body-md">@EditorService.LastResult.Message</span>
+                    </div>
+                </div>
+            }
         }
         else if (EditorService.LastResult != null && !EditorService.LastResult.Success)
         {
@@ -70,7 +83,7 @@
         {
             <div class="empty-results">
                 <i class="bi bi-table"></i>
-                <span>No results to display. Run a query to see data.</span>
+                <span>No results to display. Run a query or command to see feedback.</span>
             </div>
         }
     </div>
@@ -89,7 +102,7 @@
 
     private async Task ExportToCsv()
     {
-        if (EditorService.LastResult == null) return;
+        if (EditorService.LastResult == null || !EditorService.LastResult.IsQuery) return;
 
         var sb = new System.Text.StringBuilder();
         sb.AppendLine(string.Join(",", EditorService.LastResult.Columns.Select(c => $"\"{c.Replace("\"", "\"\"")}\"")));
@@ -99,7 +112,6 @@
             sb.AppendLine(string.Join(",", row.Select(r => $"\"{r.Replace("\"", "\"\"")}\"")));
         }
 
-        var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
         var fileName = $"query_export_{DateTime.Now:yyyyMMddHHmmss}.csv";
         
         await JSRuntime.InvokeVoidAsync("eval", @"
@@ -188,7 +200,24 @@
         text-align: center !important;
         background-color: var(--surface-container-lowest);
         color: var(--outline);
-        font-weight: normal;
+    }
+
+    .non-query-success {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        color: #81C784;
+    }
+
+    .non-query-success i { font-size: 48px; }
+
+    .non-query-success .details {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        color: var(--on-surface);
     }
 
     .badge {
@@ -252,4 +281,18 @@
     }
 
     .ghost-sm:hover { background: rgba(var(--primary-rgb), 0.1); }
+
+    .spinner {
+        width: 32px;
+        height: 32px;
+        border: 4px solid var(--outline-variant);
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>

@@ -92,23 +92,40 @@ namespace sql_editor.Services
             var result = new QueryResult();
             try
             {
-                using IDbConnection db = new SqlConnection(GetConnectionString());
-                var reader = await db.ExecuteReaderAsync(sql);
-                var dt = new DataTable();
-                dt.Load(reader);
-
-                result.Columns = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
-                foreach (DataRow row in dt.Rows)
+                using var conn = new SqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                
+                using var cmd = new SqlCommand(sql, conn);
+                using var reader = await cmd.ExecuteReaderAsync();
+                
+                // Check if we have a result set (query)
+                if (reader.FieldCount > 0)
                 {
-                    result.Rows.Add(row.ItemArray.Select(i => i?.ToString() ?? "NULL").ToList());
+                    var dt = new DataTable();
+                    dt.Load(reader);
+
+                    result.Columns = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        result.Rows.Add(row.ItemArray.Select(i => i?.ToString() ?? "NULL").ToList());
+                    }
+                    result.Message = $"Success: {dt.Rows.Count} rows returned.";
+                    result.IsQuery = true;
                 }
+                else
+                {
+                    // Non-query (INSERT, UPDATE, DELETE, etc.)
+                    int affected = reader.RecordsAffected;
+                    result.Message = $"Success: Command executed. {affected} rows affected.";
+                    result.IsQuery = false;
+                }
+                
                 result.Success = true;
-                result.Message = $"{dt.Rows.Count} rows affected.";
             }
             catch (Exception ex)
             {
                 result.Success = false;
-                result.Message = ex.Message;
+                result.Message = "Error: " + ex.Message;
             }
             return result;
         }
@@ -141,6 +158,7 @@ namespace sql_editor.Services
     public class QueryResult
     {
         public bool Success { get; set; }
+        public bool IsQuery { get; set; }
         public string Message { get; set; } = "";
         public List<string> Columns { get; set; } = new();
         public List<List<string>> Rows { get; set; } = new();
