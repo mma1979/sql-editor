@@ -1,4 +1,5 @@
 using Mma.SqlStudio.SqlServer.Extensions;
+using Mma.SqlStudio.TestApi.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 
 builder.Services.AddSqlStudio(options =>
 {
@@ -24,8 +27,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAntiforgery();
+app.MapStaticAssets();
+
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
+    .AddAdditionalAssemblies(typeof(Mma.SqlStudio.SqlServer.Components.SqlStudio).Assembly);
 
 app.Run();
