@@ -48,11 +48,9 @@
     </div>
 </div>
 
-<ConnectionDialog @bind-Visible="isConnectVisible" OnConnected="HandleConnected" />
 
 @code {
-    private bool isConnectVisible = false;
-    private string currentConnection = "Connected: LandFeesDB";
+    private string currentConnection = "Connected";
 
     protected override void OnInitialized()
     {
@@ -68,11 +66,6 @@
         EditorService.SetExecuting(true);
         var result = await SchemaService.ExecuteQueryAsync(activeTab.Content);
         EditorService.SetResult(result);
-    }
-
-    private void HandleConnected(string connectionString)
-    {
-        currentConnection = "Connected: " + (connectionString.Length > 20 ? connectionString.Substring(0, 20) + "..." : connectionString);
     }
 
     private async Task SaveActiveTab()

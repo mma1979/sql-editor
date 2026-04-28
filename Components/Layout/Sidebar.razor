@@ -7,7 +7,7 @@
     <div class="sidebar-header">
         <div class="active-db">
             <i class="bi bi-database-fill action-blue"></i>
-            <span class="label-sm">@Config.Value.Direct.Database</span>
+            <span class="label-sm">@Config.Value.Database</span>
         </div>
         <div class="header-actions">
             <i class="bi bi-arrow-repeat @(isRefreshing ? "spin" : "")" @onclick="RefreshExplorer" title="Refresh"></i>
@@ -18,7 +18,7 @@
         <div class="search-box">
             <i class="bi bi-search"></i>
             <input type="text" 
-                   placeholder="Filter @Config.Value.Direct.Database..." 
+                   placeholder="Filter @Config.Value.Database..." 
                    @bind="filterText" 
                    @bind:event="oninput" 
                    @onkeyup="FilterTree" />

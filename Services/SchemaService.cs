@@ -21,28 +21,7 @@ namespace Mma.SqlStudio.SqlServer.Services
 
         private string GetConnectionString()
         {
-            if (_options.ConnectionMode == "string") return _options.ConnectionString;
-            
-            var d = _options.Direct;
-            var builder = new SqlConnectionStringBuilder
-            {
-                DataSource = d.Server,
-                InitialCatalog = d.Database,
-                TrustServerCertificate = true,
-                MultipleActiveResultSets = true
-            };
-
-            if (d.AuthMode == "sql")
-            {
-                builder.UserID = d.Username;
-                builder.Password = d.Password;
-            }
-            else
-            {
-                builder.IntegratedSecurity = true;
-            }
-
-            return builder.ConnectionString;
+           return _options.ConnectionString;
         }
 
         public async Task<List<SchemaNode>> GetSchemaAsync()
