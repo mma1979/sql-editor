@@ -1,14 +1,16 @@
 @using sql_editor.Services
 @inject EditorService EditorService
+@inject SchemaService SchemaService
+@inject Microsoft.Extensions.Options.IOptions<sql_editor.Models.SqlStudioOptions> Config
 
 <div class="sidebar">
     <div class="sidebar-header">
         <div class="active-db">
             <i class="bi bi-database-fill action-blue"></i>
-            <span class="label-sm">PRODUCTION_DB</span>
+            <span class="label-sm">@Config.Value.Direct.Database</span>
         </div>
         <div class="header-actions">
-            <i class="bi bi-arrow-repeat" @onclick="RefreshExplorer" title="Refresh"></i>
+            <i class="bi bi-arrow-repeat @(isRefreshing ? "spin" : "")" @onclick="RefreshExplorer" title="Refresh"></i>
         </div>
     </div>
 
@@ -16,7 +18,7 @@
         <div class="search-box">
             <i class="bi bi-search"></i>
             <input type="text" 
-                   placeholder="Filter production_db..." 
+                   placeholder="Filter @Config.Value.Direct.Database..." 
                    @bind="filterText" 
                    @bind:event="oninput" 
                    @onkeyup="FilterTree" />
@@ -28,115 +30,107 @@
     </div>
     
     <div class="sidebar-content">
-        @foreach (var schema in schemas)
+        @if (isLoading)
         {
-            @if (schema.IsVisible)
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <span>Loading metadata...</span>
+            </div>
+        }
+        else if (!schemas.Any())
+        {
+            <div class="empty-state">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span>No connection or no objects found.</span>
+            </div>
+        }
+        else
+        {
+            @foreach (var schema in schemas)
             {
-                <div class="tree-item">
-                    <div class="tree-row" @onclick="() => ToggleNode(schema)">
-                        <i class="bi bi-caret-@(schema.IsExpanded ? "down" : "right")-fill caret"></i>
-                        <i class="bi bi-shield-lock" style="color: #90A4AE"></i>
-                        <span class="body-md">@schema.Name</span>
-                    </div>
-                    @if (schema.IsExpanded)
-                    {
-                        <div class="tree-children">
-                            @foreach (var group in schema.Children)
-                            {
-                                @if (group.IsVisible)
-                                {
-                                    <div class="tree-item">
-                                        <div class="tree-row" @onclick="() => ToggleNode(group)">
-                                            <i class="bi bi-caret-@(group.IsExpanded ? "down" : "right")-fill caret"></i>
-                                            <i class="bi @(group.Name == "Tables" ? "bi-folder-fill" : group.Name == "Views" ? "bi-layout-sidebar-inset" : "bi-cpu")" 
-                                               style="color: @(group.Name == "Tables" ? "#FFCA28" : group.Name == "Views" ? "#4CAF50" : "#9C27B0")"></i>
-                                            <span class="body-md">@group.Name</span>
-                                        </div>
-                                        @if (group.IsExpanded)
-                                        {
-                                            <div class="tree-children">
-                                                @foreach (var obj in group.Children)
-                                                {
-                                                    @if (obj.IsVisible)
-                                                    {
-                                                        <div class="tree-row obj-row" @ondblclick="() => OpenObjectScript(schema.Name, group.Name, obj.Name)">
-                                                            <i class="bi @(group.Name == "Tables" ? "bi-table" : group.Name == "Views" ? "bi-grid-3x3-gap" : "bi-terminal") on-surface-variant"></i>
-                                                            <span class="body-md">@obj.Name</span>
-                                                        </div>
-                                                    }
-                                                }
-                                            </div>
-                                        }
-                                    </div>
-                                }
-                            }
+                @if (schema.IsVisible)
+                {
+                    <div class="tree-item">
+                        <div class="tree-row" @onclick="() => ToggleNode(schema)">
+                            <i class="bi bi-caret-@(schema.IsExpanded ? "down" : "right")-fill caret"></i>
+                            <i class="bi bi-shield-lock" style="color: #90A4AE"></i>
+                            <span class="body-md">@schema.Name</span>
                         </div>
-                    }
-                </div>
+                        @if (schema.IsExpanded)
+                        {
+                            <div class="tree-children">
+                                @foreach (var group in schema.Children)
+                                {
+                                    @if (group.IsVisible)
+                                    {
+                                        <div class="tree-item">
+                                            <div class="tree-row" @onclick="() => ToggleNode(group)">
+                                                <i class="bi bi-caret-@(group.IsExpanded ? "down" : "right")-fill caret"></i>
+                                                <i class="bi @(group.Name == "Tables" ? "bi-folder-fill" : group.Name == "Views" ? "bi-layout-sidebar-inset" : "bi-cpu")" 
+                                                   style="color: @(group.Name == "Tables" ? "#FFCA28" : group.Name == "Views" ? "#4CAF50" : "#9C27B0")"></i>
+                                                <span class="body-md">@group.Name</span>
+                                            </div>
+                                            @if (group.IsExpanded)
+                                            {
+                                                <div class="tree-children">
+                                                    @foreach (var obj in group.Children)
+                                                    {
+                                                        @if (obj.IsVisible)
+                                                        {
+                                                            <div class="tree-row obj-row" @ondblclick="() => OpenObjectScript(schema.Name, group.Name, obj.Name)">
+                                                                <i class="bi @(group.Name == "Tables" ? "bi-table" : group.Name == "Views" ? "bi-grid-3x3-gap" : "bi-terminal") on-surface-variant"></i>
+                                                                <span class="body-md">@obj.Name</span>
+                                                            </div>
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        }
+                    </div>
+                }
             }
         }
-    </div>
-    
-    <div class="sidebar-footer">
-        <div class="tree-row"><i class="bi bi-clock-history"></i><span>History</span></div>
-        <div class="tree-row"><i class="bi bi-star"></i><span>Favorites</span></div>
-        <div class="tree-row"><i class="bi bi-gear"></i><span>Settings</span></div>
     </div>
 </div>
 
 @code {
     private string filterText = "";
     private List<Node> schemas = new();
+    private bool isLoading = true;
+    private bool isRefreshing = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        InitializeData();
+        await LoadData();
     }
 
-    private void InitializeData()
+    private async Task LoadData()
     {
-        schemas = new List<Node>
-        {
-            new Node("dbo") {
-                IsExpanded = true,
-                Children = new List<Node> {
-                    new Node("Tables") {
-                        IsExpanded = true,
-                        Children = new List<Node> {
-                            new Node("analytics_events"),
-                            new Node("user_metadata"),
-                            new Node("transaction_logs")
-                        }
-                    },
-                    new Node("Views") {
-                        Children = new List<Node> {
-                            new Node("active_users_view")
-                        }
-                    }
-                }
-            },
-            new Node("sales") {
-                Children = new List<Node> {
-                    new Node("Tables") {
-                        Children = new List<Node> {
-                            new Node("orders"),
-                            new Node("customers"),
-                            new Node("invoices")
-                        }
-                    }
-                }
-            },
-            new Node("analytics") {
-                Children = new List<Node> {
-                    new Node("Views") {
-                        Children = new List<Node> {
-                            new Node("daily_revenue_report"),
-                            new Node("user_retention_cohorts")
-                        }
-                    }
-                }
-            }
-        };
+        isLoading = true;
+        StateHasChanged();
+
+        var dbSchemas = await SchemaService.GetSchemaAsync();
+        
+        schemas = dbSchemas.Select(s => new Node(s.Name) {
+            Children = s.Children.Select(c => new Node(c.Name) {
+                Children = c.Objects.Select(o => new Node(o)).ToList()
+            }).ToList()
+        }).ToList();
+
+        // Expand dbo and its Tables by default if they exist
+        var dbo = schemas.FirstOrDefault(s => s.Name.Equals("dbo", StringComparison.OrdinalIgnoreCase));
+        if (dbo != null) {
+            dbo.IsExpanded = true;
+            var tables = dbo.Children.FirstOrDefault(c => c.Name == "Tables");
+            if (tables != null) tables.IsExpanded = true;
+        }
+
+        isLoading = false;
+        StateHasChanged();
     }
 
     private void ToggleNode(Node node) => node.IsExpanded = !node.IsExpanded;
@@ -147,17 +141,11 @@
         string content = $"-- Script for {group.TrimEnd('s')} {schema}.{name}\n";
         
         if (group == "Tables")
-        {
-            content += $"CREATE TABLE [{schema}].[{name}] (\n    [Id] INT PRIMARY KEY IDENTITY(1,1),\n    [CreatedAt] DATETIME2 DEFAULT GETDATE(),\n    [Payload] NVARCHAR(MAX)\n);";
-        }
+            content += $"SELECT TOP 100 * FROM [{schema}].[{name}];";
         else if (group == "Views")
-        {
-            content += $"CREATE VIEW [{schema}].[{name}] AS\nSELECT * FROM [{schema}].[some_base_table]\nWHERE [IsActive] = 1;";
-        }
+            content += $"SELECT TOP 100 * FROM [{schema}].[{name}];";
         else
-        {
-            content += $"CREATE PROCEDURE [{schema}].[{name}]\nAS\nBEGIN\n    SET NOCOUNT ON;\n    SELECT 'Executing {name}...';\nEND;";
-        }
+            content += $"EXEC [{schema}].[{name}];";
 
         EditorService.AddTab(tabName, content);
     }
@@ -169,7 +157,6 @@
             SetVisibility(schemas, true);
             return;
         }
-
         FilterRecursive(schemas, filterText.ToLower());
     }
 
@@ -180,10 +167,8 @@
         {
             bool matches = node.Name.ToLower().Contains(filter);
             bool childMatches = FilterRecursive(node.Children, filter);
-            
             node.IsVisible = matches || childMatches;
             if (node.IsVisible) anyChildVisible = true;
-            
             if (childMatches && !string.IsNullOrWhiteSpace(filter)) node.IsExpanded = true;
         }
         return anyChildVisible;
@@ -204,9 +189,11 @@
         FilterTree();
     }
 
-    private void RefreshExplorer()
+    private async Task RefreshExplorer()
     {
-        InitializeData();
+        isRefreshing = true;
+        await LoadData();
+        isRefreshing = false;
         FilterTree();
     }
 
@@ -216,12 +203,7 @@
         public bool IsExpanded { get; set; }
         public bool IsVisible { get; set; } = true;
         public List<Node> Children { get; set; } = new();
-
-        public Node(string name, bool expanded = false)
-        {
-            Name = name;
-            IsExpanded = expanded;
-        }
+        public Node(string name, bool expanded = false) { Name = name; IsExpanded = expanded; }
     }
 }
 
@@ -243,7 +225,6 @@
         justify-content: space-between;
         padding: 0 12px;
         border-bottom: 1px solid var(--outline-variant);
-        background-color: var(--surface-container-low);
     }
 
     .active-db {
@@ -260,7 +241,6 @@
     }
 
     .search-box {
-        position: relative;
         display: flex;
         align-items: center;
         background-color: var(--surface-container-low);
@@ -268,11 +248,6 @@
         border-radius: 4px;
         padding: 2px 8px;
         gap: 8px;
-    }
-
-    .search-box i {
-        font-size: 12px;
-        color: var(--on-surface-variant);
     }
 
     .search-box input {
@@ -285,19 +260,37 @@
         padding: 4px 0;
     }
 
-    .clear-btn {
-        cursor: pointer;
-        opacity: 0.7;
-    }
-
-    .clear-btn:hover {
-        opacity: 1;
-    }
-
     .sidebar-content {
         flex: 1;
         overflow-y: auto;
         padding: 8px 0;
+    }
+
+    .loading-state, .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100px;
+        gap: 12px;
+        color: var(--on-surface-variant);
+        font-size: 12px;
+    }
+
+    .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--outline-variant);
+        border-top: 2px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .spin { animation: spin 1s linear infinite; }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
     .tree-row {
@@ -308,40 +301,11 @@
         padding: 0 12px;
         cursor: pointer;
         user-select: none;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .tree-row:hover {
-        background-color: var(--surface-container-high);
-    }
-
-    .tree-children {
-        padding-left: 12px;
-    }
-
-    .caret {
-        font-size: 10px;
-        width: 12px;
-        color: var(--on-surface-variant);
-    }
-
-    .obj-row {
-        padding-left: 12px;
-    }
-
-    .header-actions i {
-        cursor: pointer;
-        font-size: 14px;
-        color: var(--on-surface-variant);
-    }
-
-    .sidebar-footer {
-        border-top: 1px solid var(--outline-variant);
-        padding: 4px 0;
-        background-color: var(--surface-container-lowest);
-        font-size: 12px;
-        color: var(--on-surface-variant);
-    }
+    .tree-row:hover { background-color: var(--surface-container-high); }
+    .tree-children { padding-left: 12px; }
+    .caret { font-size: 10px; width: 12px; color: var(--on-surface-variant); }
+    .obj-row { padding-left: 12px; }
+    .header-actions i { cursor: pointer; color: var(--on-surface-variant); }
 </style>
