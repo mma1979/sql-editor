@@ -1,0 +1,156 @@
+openapi: 3.0.3
+info:
+  title: SQL Proxy API
+  description: API to proxy SQL commands and schema exploration for the SQL Object Explorer.
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: v1 API Base
+paths:
+  /health/{databaseId}:
+    get:
+      summary: Check database connection health
+      description: Validates if the proxy can connect to the target database.
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Connection successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Database not found
+
+  /schema/{databaseId}:
+    get:
+      summary: Get database schema
+      description: Returns a hierarchical structure of schemas, tables, views, and procedures.
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Schema retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaNode'
+        '401':
+          description: Unauthorized
+
+  /query/{databaseId}:
+    post:
+      summary: Execute SQL query
+      description: Runs a SQL command against the target database and returns results.
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+      responses:
+        '200':
+          description: Query executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResult'
+        '401':
+          description: Unauthorized
+        '400':
+          description: Bad Request (e.g. invalid SQL)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    SchemaNode:
+      type: object
+      properties:
+        name:
+          type: string
+          example: dbo
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryNode'
+
+    CategoryNode:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Tables
+        objects:
+          type: array
+          items:
+            type: string
+          example: ["Users", "Orders", "Products"]
+
+    QueryRequest:
+      type: object
+      properties:
+        sql:
+          type: string
+          example: "SELECT TOP 10 * FROM Users"
+
+    QueryResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        isQuery:
+          type: boolean
+          description: True if the command returned a result set (SELECT), false otherwise.
+        message:
+          type: string
+        columns:
+          type: array
+          items:
+            type: string
+          example: ["Id", "Name", "Email"]
+        rows:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+          example: [["1", "John Doe", "john@example.com"], ["2", "Jane Smith", "jane@example.com"]]
