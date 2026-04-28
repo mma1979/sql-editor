@@ -1,0 +1,255 @@
+<div class="modal-backdrop @(Visible ? "visible" : "")">
+    <div class="modal-container">
+        <div class="modal-header">
+            <span class="label-md">CONNECT TO SERVER</span>
+            <i class="bi bi-x-lg close-icon" @onclick="Close"></i>
+        </div>
+        
+        <div class="modal-tabs">
+            <div class="modal-tab @(mode == "builder" ? "active" : "")" @onclick='() => mode = "builder"'>Connection Builder</div>
+            <div class="modal-tab @(mode == "string" ? "active" : "")" @onclick='() => mode = "string"'>Connection String</div>
+        </div>
+
+        <div class="modal-content">
+            @if (mode == "builder")
+            {
+                <div class="form-group">
+                    <label>Server Name</label>
+                    <input type="text" placeholder="e.g. localhost, 127.0.0.1" @bind="server" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Authentication</label>
+                        <select @bind="authMode">
+                            <option value="windows">Windows Authentication</option>
+                            <option value="sql">SQL Server Authentication</option>
+                        </select>
+                    </div>
+                </div>
+                @if (authMode == "sql")
+                {
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label>Username</label>
+                            <input type="text" @bind="username" />
+                        </div>
+                        <div class="form-group flex-1">
+                            <label>Password</label>
+                            <input type="password" @bind="password" />
+                        </div>
+                    </div>
+                }
+                <div class="form-group">
+                    <label>Database</label>
+                    <div class="input-with-action">
+                        <input type="text" placeholder="Select or type database name" @bind="database" />
+                        <button class="secondary-sm">Browse</button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>Connection String</label>
+                    <textarea class="raw-string" placeholder="Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;" @bind="connectionString"></textarea>
+                </div>
+            }
+
+            <div class="options-grid">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="trust" @bind="trustServer" />
+                    <label for="trust">Trust Server Certificate</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="encrypt" @bind="encrypt" />
+                    <label for="encrypt">Encrypt Connection</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="secondary" @onclick="Close">Cancel</button>
+            <button class="primary" @onclick="Connect">Connect</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public EventCallback<string> OnConnected { get; set; }
+
+    private string mode = "builder";
+    private string server = "";
+    private string authMode = "windows";
+    private string username = "";
+    private string password = "";
+    private string database = "";
+    private string connectionString = "";
+    private bool trustServer = true;
+    private bool encrypt = false;
+
+    private async Task Close() => await VisibleChanged.InvokeAsync(false);
+
+    private async Task Connect()
+    {
+        string finalString = mode == "string" ? connectionString : 
+            $"Server={server};Database={database};User Id={username};Password={password};TrustServerCertificate={trustServer};Encrypt={encrypt};";
+        
+        await OnConnected.InvokeAsync(finalString);
+        await Close();
+    }
+}
+
+<style>
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-backdrop.visible {
+        display: flex;
+    }
+
+    .modal-container {
+        width: 480px;
+        background-color: var(--surface-container-low);
+        border: 1px solid var(--outline-variant);
+        border-radius: 8px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        height: 48px;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--outline-variant);
+    }
+
+    .close-icon {
+        cursor: pointer;
+        color: var(--on-surface-variant);
+    }
+
+    .modal-tabs {
+        display: flex;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--outline-variant);
+        gap: 24px;
+    }
+
+    .modal-tab {
+        padding: 12px 0;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--on-surface-variant);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+    }
+
+    .modal-tab.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+    }
+
+    .modal-content {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--on-surface-variant);
+        text-transform: uppercase;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 16px;
+    }
+
+    .flex-1 { flex: 1; }
+
+    input, select, textarea {
+        background-color: var(--surface-container-lowest);
+        border: 1px solid var(--outline-variant);
+        border-radius: 4px;
+        padding: 8px 12px;
+        color: var(--on-surface);
+        font-size: 13px;
+        outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--primary);
+    }
+
+    .raw-string {
+        height: 100px;
+        resize: none;
+        font-family: var(--font-mono);
+    }
+
+    .input-with-action {
+        display: flex;
+        gap: 8px;
+    }
+
+    .input-with-action input { flex: 1; }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--on-surface-variant);
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        background-color: var(--surface-container-lowest);
+        border-top: 1px solid var(--outline-variant);
+        border-radius: 0 0 8px 8px;
+    }
+
+    button.secondary-sm {
+        padding: 4px 12px;
+        font-size: 12px;
+        background-color: var(--surface-container-high);
+        border: 1px solid var(--outline-variant);
+        border-radius: 4px;
+        color: var(--on-surface);
+    }
+</style>

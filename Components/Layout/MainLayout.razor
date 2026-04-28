@@ -6,13 +6,8 @@
             <span class="logo"></span>
             <span class="app-name">SQL Studio Pro</span>
         </div>
-        <nav class="top-nav">
-            <a href="#">Query</a>
-            <a href="#">Database</a>
-            <a href="#">View</a>
-            <a href="#">Tools</a>
-        </nav>
         <div class="top-actions">
+            <button class="primary" @onclick="ShowConnect"><i class="bi bi-plug-fill"></i> Connect</button>
             <button class="primary"><i class="bi bi-play-fill"></i> Run</button>
             <button class="secondary">Save</button>
             <div class="separator"></div>
@@ -28,7 +23,7 @@
 
     <div class="status-bar">
         <div class="status-left">
-            <span class="status-item"><i class="bi bi-database"></i> Connected: db-prod-cluster-01</span>
+            <span class="status-item"><i class="bi bi-database"></i> @currentConnection</span>
             <span class="status-item">PostgreSQL 15.4</span>
         </div>
         <div class="status-right">
@@ -39,5 +34,17 @@
     </div>
 </div>
 
+<ConnectionDialog @bind-Visible="isConnectVisible" OnConnected="HandleConnected" />
+
 @code {
+    private bool isConnectVisible = false;
+    private string currentConnection = "Connected: db-prod-cluster-01";
+
+    private void ShowConnect() => isConnectVisible = true;
+
+    private void HandleConnected(string connectionString)
+    {
+        // For demonstration, we just update the status bar
+        currentConnection = "Connected: " + (connectionString.Length > 20 ? connectionString.Substring(0, 20) + "..." : connectionString);
+    }
 }
