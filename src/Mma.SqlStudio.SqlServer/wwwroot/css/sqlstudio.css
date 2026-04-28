@@ -519,6 +519,17 @@ main {
     user-select: none;
     font-size: 13px;
     color: var(--on-surface);
+    white-space: nowrap;
+}
+
+.tree-row > i, .tree-row > .spacer {
+    flex-shrink: 0;
+}
+
+.tree-row > span.node-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
 }
 .tree-row:hover { background-color: var(--surface-container-high); }
 .tree-children { padding-left: 12px; display: none; }

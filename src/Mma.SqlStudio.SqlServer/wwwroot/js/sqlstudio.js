@@ -70,7 +70,23 @@
         try {
             const response = await fetch('/api/sqlstudio/schema');
             if (response.ok) {
-                state.schema = await response.json();
+                const rawSchema = await response.json();
+                // Normalize schema so categories use 'children' instead of 'objects'
+                state.schema = rawSchema.map(s => ({
+                    name: s.name,
+                    isVisible: true,
+                    children: (s.children || []).map(c => ({
+                        name: c.name,
+                        isVisible: true,
+                        parentType: c.name,
+                        children: (c.objects || []).map(o => ({
+                            name: o,
+                            schemaName: s.name,
+                            parentType: c.name,
+                            isVisible: true
+                        }))
+                    }))
+                }));
                 renderSchema(state.schema);
             }
         } catch (e) {
@@ -114,9 +130,9 @@
             if (node.children && node.children.length > 0) {
                 html += `<i class="bi bi-caret-right-fill caret"></i> `;
             } else {
-                html += `<span style="width:16px;display:inline-block"></span> `;
+                html += `<span class="spacer" style="width:16px;display:inline-block"></span> `;
             }
-            html += `<i class="bi ${iconClass}" style="color:${iconColor}"></i> <span>${node.name || node}</span>`;
+            html += `<i class="bi ${iconClass}" style="color:${iconColor}"></i> <span class="node-text" title="${node.name || node}">${node.name || node}</span>`;
             
             rowEl.innerHTML = html;
             itemEl.appendChild(rowEl);
@@ -125,15 +141,6 @@
                 const childrenContainer = document.createElement('div');
                 childrenContainer.className = 'tree-children';
                 
-                // Keep track of parent type for leaf nodes
-                node.children.forEach(c => {
-                    if (typeof c === 'string') {
-                        // Transform leaf nodes to object for consistent rendering
-                        c = { name: c, parentType: node.name };
-                    } else {
-                        c.parentType = node.name;
-                    }
-                });
 
                 renderSchema(node.children, childrenContainer, depth + 1);
                 itemEl.appendChild(childrenContainer);
@@ -181,9 +188,9 @@
 
                     if (c.children) {
                         c.children.forEach(o => {
-                            const name = typeof o === 'string' ? o : o.name;
+                            const name = o.name;
                             const oMatch = name.toLowerCase().includes(lowerText);
-                            if (typeof o !== 'string') o.isVisible = oMatch || cMatch || schemaMatch;
+                            o.isVisible = oMatch || cMatch || schemaMatch;
                             if (oMatch) cHasVisibleChild = true;
                         });
                     }
