@@ -11,9 +11,12 @@
     <!-- NuGet Package Properties -->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Mma.SqlStudio.SqlServer</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>Mma</Authors>
+    <Version>1.0.1</Version>
+    <Authors>Mohammed Abdelhay</Authors>
     <Description>A configurable Blazor Razor Class Library providing a SQL Server object explorer and query editor.</Description>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,9 +24,18 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
   </ItemGroup>
 
-
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\**\*" Pack="true" PackagePath="contentFiles\any\any\wwwroot\Mma.SqlStudio.SqlServer\;content\any\any\wwwroot\Mma.SqlStudio.SqlServer\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="LICENSE" Pack="true" PackagePath="\" />
+    <None Include="icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
