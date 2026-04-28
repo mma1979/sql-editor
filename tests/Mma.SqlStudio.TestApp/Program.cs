@@ -9,8 +9,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddSqlStudio(options =>
 {
-    options.Database = "TestDB";
-    options.ConnectionString = "Server=localhost;Database=TestDB;Trusted_Connection=True;";
+    options.Database = "LandFeesDB";
+    options.ConnectionString = "data source=localhost;initial catalog=LandFeesDB;persist security info=True;TrustServerCertificate=True; user id=sa;password=Abc@1234;MultipleActiveResultSets=True;Max Pool Size=200;";
 });
 
 var app = builder.Build();
