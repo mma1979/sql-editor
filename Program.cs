@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddScoped<sql_editor.Services.EditorService>();
+builder.Services.Configure<sql_editor.Models.SqlStudioOptions>(builder.Configuration.GetSection("SqlStudio"));
 
 var app = builder.Build();
 

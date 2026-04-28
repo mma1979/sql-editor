@@ -1,13 +1,18 @@
+@using sql_editor.Models
+@using Microsoft.Extensions.Options
+@inject IOptions<SqlStudioOptions> Config
+
 <div class="modal-backdrop @(Visible ? "visible" : "")">
     <div class="modal-container">
         <div class="modal-header">
-            <span class="label-md">CONNECT TO SERVER</span>
+            <span class="label-md">CONNECT TO DATA SOURCE</span>
             <i class="bi bi-x-lg close-icon" @onclick="Close"></i>
         </div>
         
         <div class="modal-tabs">
-            <div class="modal-tab @(mode == "builder" ? "active" : "")" @onclick='() => mode = "builder"'>Connection Builder</div>
+            <div class="modal-tab @(mode == "builder" ? "active" : "")" @onclick='() => mode = "builder"'>Direct Builder</div>
             <div class="modal-tab @(mode == "string" ? "active" : "")" @onclick='() => mode = "string"'>Connection String</div>
+            <div class="modal-tab @(mode == "api" ? "active" : "")" @onclick='() => mode = "api"'>API Proxy</div>
         </div>
 
         <div class="modal-content">
@@ -42,29 +47,46 @@
                 <div class="form-group">
                     <label>Database</label>
                     <div class="input-with-action">
-                        <input type="text" placeholder="Select or type database name" @bind="database" />
-                        <button class="secondary-sm">Browse</button>
+                        <input type="text" placeholder="Database name" @bind="database" />
                     </div>
                 </div>
             }
-            else
+            else if (mode == "string")
             {
                 <div class="form-group">
                     <label>Connection String</label>
-                    <textarea class="raw-string" placeholder="Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;" @bind="connectionString"></textarea>
+                    <textarea class="raw-string" placeholder="Server=myServerAddress;Database=myDataBase;..." @bind="connectionString"></textarea>
+                </div>
+            }
+            else if (mode == "api")
+            {
+                <div class="form-group">
+                    <label>API Endpoint URL</label>
+                    <input type="text" placeholder="https://api.yourdomain.com/sql-proxy" @bind="apiUrl" />
+                </div>
+                <div class="form-group">
+                    <label>Authentication Token</label>
+                    <input type="password" placeholder="Bearer Token or API Key" @bind="apiToken" />
+                </div>
+                <div class="form-group">
+                    <label>Target Database Identifier</label>
+                    <input type="text" placeholder="e.g. prod-db-01" @bind="apiDbId" />
                 </div>
             }
 
-            <div class="options-grid">
-                <div class="checkbox-item">
-                    <input type="checkbox" id="trust" @bind="trustServer" />
-                    <label for="trust">Trust Server Certificate</label>
+            @if (mode != "api")
+            {
+                <div class="options-grid">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="trust" @bind="trustServer" />
+                        <label for="trust">Trust Server Certificate</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="encrypt" @bind="encrypt" />
+                        <label for="encrypt">Encrypt Connection</label>
+                    </div>
                 </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="encrypt" @bind="encrypt" />
-                    <label for="encrypt">Encrypt Connection</label>
-                </div>
-            </div>
+            }
         </div>
 
         <div class="modal-footer">
@@ -89,12 +111,48 @@
     private bool trustServer = true;
     private bool encrypt = false;
 
+    private string apiUrl = "";
+    private string apiToken = "";
+    private string apiDbId = "";
+
+    protected override void OnInitialized()
+    {
+        var settings = Config.Value;
+        mode = settings.ConnectionMode;
+        
+        // Load Direct settings
+        server = settings.Direct.Server;
+        database = settings.Direct.Database;
+        authMode = settings.Direct.AuthMode;
+        username = settings.Direct.Username;
+        password = settings.Direct.Password;
+
+        // Load string settings
+        connectionString = settings.ConnectionString;
+
+        // Load API settings
+        apiUrl = settings.ApiProxy.Url;
+        apiToken = settings.ApiProxy.Token;
+        apiDbId = settings.ApiProxy.DatabaseId;
+    }
+
     private async Task Close() => await VisibleChanged.InvokeAsync(false);
 
     private async Task Connect()
     {
-        string finalString = mode == "string" ? connectionString : 
-            $"Server={server};Database={database};User Id={username};Password={password};TrustServerCertificate={trustServer};Encrypt={encrypt};";
+        string finalString = "";
+        if (mode == "api")
+        {
+            finalString = $"API:{apiUrl}|DB:{apiDbId}";
+        }
+        else if (mode == "string")
+        {
+            finalString = connectionString;
+        }
+        else
+        {
+            finalString = $"Server={server};Database={database};User Id={username};Password={password};";
+        }
         
         await OnConnected.InvokeAsync(finalString);
         await Close();
@@ -121,7 +179,7 @@
     }
 
     .modal-container {
-        width: 480px;
+        width: 520px;
         background-color: var(--surface-container-low);
         border: 1px solid var(--outline-variant);
         border-radius: 8px;
@@ -148,7 +206,7 @@
         display: flex;
         padding: 0 16px;
         border-bottom: 1px solid var(--outline-variant);
-        gap: 24px;
+        gap: 20px;
     }
 
     .modal-tab {
@@ -158,6 +216,7 @@
         color: var(--on-surface-variant);
         cursor: pointer;
         border-bottom: 2px solid transparent;
+        white-space: nowrap;
     }
 
     .modal-tab.active {
@@ -179,10 +238,11 @@
     }
 
     .form-group label {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 600;
         color: var(--on-surface-variant);
         text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .form-row {
@@ -200,6 +260,7 @@
         color: var(--on-surface);
         font-size: 13px;
         outline: none;
+        transition: border-color 0.2s;
     }
 
     input:focus, select:focus, textarea:focus {
@@ -242,14 +303,5 @@
         background-color: var(--surface-container-lowest);
         border-top: 1px solid var(--outline-variant);
         border-radius: 0 0 8px 8px;
-    }
-
-    button.secondary-sm {
-        padding: 4px 12px;
-        font-size: 12px;
-        background-color: var(--surface-container-high);
-        border: 1px solid var(--outline-variant);
-        border-radius: 4px;
-        color: var(--on-surface);
     }
 </style>
