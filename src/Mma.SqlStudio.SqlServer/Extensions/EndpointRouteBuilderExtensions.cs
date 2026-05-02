@@ -14,6 +14,11 @@ namespace Mma.SqlStudio.SqlServer.Extensions
             var apiPath = $"/api/{options.Route.TrimStart('/')}";
             var group = endpoints.MapGroup(apiPath);
 
+            if (options.AuthFilter is not null)
+            {
+                group.AddEndpointFilter(new Filters.SqlStudioAuthEndpointFilter(options.AuthFilter, options.UnauthorizedRedirectUrl));
+            }
+
             group.MapGet("/schema", async (SchemaService schemaService) =>
             {
                 var schema = await schemaService.GetSchemaAsync();

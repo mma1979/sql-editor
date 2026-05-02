@@ -9,5 +9,18 @@ namespace Mma.SqlStudio.SqlServer.Models
         public bool EnableSchemaLoad { get; set; } = true;
         public List<string> ExcludedSchemas { get; set; } = new();
         public List<string> ExcludedObjects { get; set; } = new();
+
+        /// <summary>
+        /// Optional. A predicate that receives the current HttpContext and returns true
+        /// when the request is authorized to use SqlStudio. If null, no restriction is applied.
+        /// </summary>
+        public Func<Microsoft.AspNetCore.Http.HttpContext, bool>? AuthFilter { get; set; }
+
+        /// <summary>
+        /// The URL to redirect to when AuthFilter returns false.
+        /// If null, a 401 Unauthorized response is returned instead.
+        /// Defaults to "/".
+        /// </summary>
+        public string? UnauthorizedRedirectUrl { get; set; } = "/";
     }
 }

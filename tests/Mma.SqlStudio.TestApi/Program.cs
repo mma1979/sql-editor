@@ -19,6 +19,25 @@ builder.Services.AddSqlStudio(options =>
     options.EnableSchemaLoad = true;
     options.ExcludedSchemas = new List<string> { "HangFire" };
     options.ExcludedObjects = new List<string> { "ApiLogs", "AppUsers" };
+    
+    // Example Auth Filter: HTTP Basic Auth (admin:password)
+    options.AuthFilter = ctx =>
+    {
+        if (ctx.Request.Headers.TryGetValue("Authorization", out var authHeader) &&
+            authHeader.ToString().StartsWith("Basic "))
+        {
+            var token = authHeader.ToString().Substring("Basic ".Length).Trim();
+            // "admin:password" base64 encoded is "YWRtaW46cGFzc3dvcmQ="
+            return token == "YWRtaW46cGFzc3dvcmQ=";
+        }
+
+        // Setting this header triggers the browser's native login prompt when returning 401
+        ctx.Response.Headers.WWWAuthenticate = "Basic realm=\"SqlStudio\"";
+        return false;
+    };
+    
+    // Set to null to return a 401 Unauthorized response instead of redirecting
+    options.UnauthorizedRedirectUrl = null;
 });
 
 var app = builder.Build();

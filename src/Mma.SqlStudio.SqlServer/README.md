@@ -21,6 +21,7 @@ Mma.SqlStudio.SqlServer is packaged as a Razor Class Library (RCL), making it in
 - 🎨 **Modern UI**: Clean, responsive, and dynamic interface built with vanilla CSS. Dark mode supported!
 - 🔌 **Embeddable**: Drop into any ASP.NET Core application via Minimal APIs and Razor Pages in just a few lines of code.
 - ⚙️ **Highly Configurable**: Control routing, application naming, default connections, and schema loading.
+- 🔒 **Customizable Authorization**: Secure your SQL Studio instance by applying custom endpoint and page authorization filters, including built-in support for HTTP Basic Auth or your own custom logic.
 
 ## 🚀 Getting Started
 
@@ -29,7 +30,7 @@ Mma.SqlStudio.SqlServer is packaged as a Razor Class Library (RCL), making it in
 Add the package to your project using the .NET CLI:
 
 ```bash
-dotnet add package Mma.SqlStudio.SqlServer
+dotnet add package Mma.SqlStudio.SqlServer --version 1.2.1
 ```
 
 ### 2. Configure Services
@@ -53,6 +54,25 @@ builder.Services.AddSqlStudio(options =>
     // Optional: Object Filtering
     options.ExcludedSchemas = ["guest", "temp"]; 
     options.ExcludedObjects = ["Logs", "InternalTable"];
+    
+    // Optional: Authorization Filter
+    options.AuthFilter = ctx => 
+    {
+        // Example: HTTP Basic Auth (admin:password)
+        if (ctx.Request.Headers.TryGetValue("Authorization", out var authHeader) && 
+            authHeader.ToString().StartsWith("Basic "))
+        {
+            var token = authHeader.ToString().Substring("Basic ".Length).Trim();
+            return token == "YWRtaW46cGFzc3dvcmQ=";
+        }
+        
+        ctx.Response.Headers.WWWAuthenticate = "Basic realm=\"SqlStudio\"";
+        return false;
+    };
+    
+    // Set to null to return 401 Unauthorized instead of redirecting
+    // Alternatively, provide a path like "/access-denied" to redirect rejected requests
+    options.UnauthorizedRedirectUrl = null;
 });
 ```
 

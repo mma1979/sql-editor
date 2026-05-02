@@ -20,6 +20,16 @@ namespace Mma.SqlStudio.SqlServer.Extensions
                 .Configure<IOptions<SqlStudioOptions>>((options, sqlStudioOptions) =>
                 {
                     options.Conventions.Add(new SqlStudioPageRouteModelConvention(sqlStudioOptions.Value.Route));
+                    
+                    if (sqlStudioOptions.Value.AuthFilter is not null)
+                    {
+                        options.Conventions.AddPageApplicationModelConvention(
+                            "/SqlStudio",
+                            model => model.Filters.Add(
+                                new Filters.SqlStudioAuthPageFilter(sqlStudioOptions.Value.AuthFilter, sqlStudioOptions.Value.UnauthorizedRedirectUrl)
+                            )
+                        );
+                    }
                 });
 
             services.AddScoped<SchemaService>();
@@ -37,6 +47,16 @@ namespace Mma.SqlStudio.SqlServer.Extensions
                 .Configure<IOptions<SqlStudioOptions>>((options, sqlStudioOptions) =>
                 {
                     options.Conventions.Add(new SqlStudioPageRouteModelConvention(sqlStudioOptions.Value.Route));
+
+                    if (sqlStudioOptions.Value.AuthFilter is not null)
+                    {
+                        options.Conventions.AddPageApplicationModelConvention(
+                            "/SqlStudio",
+                            model => model.Filters.Add(
+                                new Filters.SqlStudioAuthPageFilter(sqlStudioOptions.Value.AuthFilter, sqlStudioOptions.Value.UnauthorizedRedirectUrl)
+                            )
+                        );
+                    }
                 });
 
             services.AddScoped<SchemaService>();
