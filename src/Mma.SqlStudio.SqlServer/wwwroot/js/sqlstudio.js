@@ -34,13 +34,16 @@
         resultsTbody: document.getElementById('results-tbody'),
         btnExportCsv: document.getElementById('btn-export-csv'),
         statusRowsCount: document.getElementById('status-rows-count'),
-        statusState: document.getElementById('status-state')
+        statusState: document.getElementById('status-state'),
+        sidebar: document.getElementById('sidebar'),
+        btnToggleSidebar: document.getElementById('btn-toggle-sidebar')
     };
 
     // --- Initialization ---
     function init() {
         bindEvents();
         loadSchema();
+        applySidebarState();
         addTab('query_1.sql', "SELECT\n    u.id,\n    u.username,\n    COUNT(e.id) AS total_events,\n    MAX(e.timestamp) AS last_active\nFROM users u\nJOIN events e ON u.id = e.user_id\nWHERE e.status = 'active'\nGROUP BY u.id, u.username\nORDER BY last_active DESC;");
     }
 
@@ -62,6 +65,29 @@
         els.btnFormat.addEventListener('click', formatSql);
         els.btnCopy.addEventListener('click', copySql);
         els.btnExportCsv.addEventListener('click', exportCsv);
+        els.btnToggleSidebar.addEventListener('click', toggleSidebar);
+    }
+
+    function toggleSidebar() {
+        const isCollapsed = els.sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sqlstudio_sidebar_collapsed', isCollapsed);
+        
+        // Update icon if needed
+        const icon = els.btnToggleSidebar.querySelector('i');
+        if (isCollapsed) {
+            icon.classList.replace('bi-layout-sidebar-inset', 'bi-layout-sidebar');
+        } else {
+            icon.classList.replace('bi-layout-sidebar', 'bi-layout-sidebar-inset');
+        }
+    }
+
+    function applySidebarState() {
+        const isCollapsed = localStorage.getItem('sqlstudio_sidebar_collapsed') === 'true';
+        if (isCollapsed) {
+            els.sidebar.classList.add('collapsed');
+            const icon = els.btnToggleSidebar.querySelector('i');
+            icon.classList.replace('bi-layout-sidebar-inset', 'bi-layout-sidebar');
+        }
     }
 
     // --- Schema Explorer ---

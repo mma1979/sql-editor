@@ -463,6 +463,20 @@ main {
     flex-shrink: 0;
 }
 
+.sidebar.collapsed {
+    display: none;
+}
+
+.toggle-sidebar {
+    margin-right: -8px;
+    font-size: 18px;
+    color: var(--on-surface-variant);
+}
+
+.toggle-sidebar:hover {
+    color: var(--on-surface);
+}
+
 .sidebar-header {
     height: 40px;
     display: flex;
