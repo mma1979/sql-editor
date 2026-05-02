@@ -42,8 +42,10 @@
     // --- Initialization ---
     function init() {
         bindEvents();
-        loadSchema();
-        applySidebarState();
+        if (window.EnableSchemaLoad) {
+            loadSchema();
+            applySidebarState();
+        }
         addTab('query_1.sql', "SELECT\n    u.id,\n    u.username,\n    COUNT(e.id) AS total_events,\n    MAX(e.timestamp) AS last_active\nFROM users u\nJOIN events e ON u.id = e.user_id\nWHERE e.status = 'active'\nGROUP BY u.id, u.username\nORDER BY last_active DESC;");
     }
 

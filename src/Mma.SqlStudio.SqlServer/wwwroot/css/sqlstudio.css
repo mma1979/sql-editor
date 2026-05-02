@@ -437,6 +437,11 @@ main {
 .icon-btn:hover {
     background-color: var(--surface-container-high);
 }
+.icon-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: var(--outline);
+}
 
 .spinner {
     width: 20px;

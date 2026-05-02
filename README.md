@@ -21,6 +21,7 @@ Mma.SqlStudio.SqlServer is a highly customizable, embeddable SQL Server Object E
        options.AppName = "Mma SQL Studio"; // Custom application name
        options.ConnectionString = "YourConnectionString";
        options.Database = "YourDatabase";
+       options.EnableSchemaLoad = true; // Set to false to hide Object Explorer (default: true)
    });
    ```
 

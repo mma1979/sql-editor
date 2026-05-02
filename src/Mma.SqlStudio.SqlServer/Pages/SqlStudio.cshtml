@@ -19,7 +19,7 @@
 <body>
     <div class="page">
         <div class="top-bar">
-            <button class="icon-btn toggle-sidebar" id="btn-toggle-sidebar" title="Toggle Object Explorer">
+            <button class="icon-btn toggle-sidebar" id="btn-toggle-sidebar" title="Toggle Object Explorer" @(!SqlStudioOptions.Value.EnableSchemaLoad ? "disabled" : "")>
                 <i class="bi bi-layout-sidebar-inset"></i>
             </button>
             <div class="brand">
@@ -39,7 +39,7 @@
         <main>
             <div class="workspace">
                 <!-- Sidebar -->
-                <div class="sidebar" id="sidebar">
+                <div class="sidebar @(!SqlStudioOptions.Value.EnableSchemaLoad ? "collapsed" : "")" id="sidebar">
                     <div class="sidebar-header">
                         <span class="title"><i class="bi bi-database"></i> Object Explorer</span>
                         <div class="actions">
@@ -130,6 +130,7 @@
     <!-- Scripts -->
     <script>
         window.SqlStudioApiUrl = '/api/@SqlStudioOptions.Value.Route.TrimStart('/')';
+        window.EnableSchemaLoad = @SqlStudioOptions.Value.EnableSchemaLoad.ToString().ToLower();
     </script>
     <script src="~/_content/Mma.SqlStudio.SqlServer/js/sqlstudio.js"></script>
     <script src="~/_content/Mma.SqlStudio.SqlServer/js/fileHelper.js"></script>
