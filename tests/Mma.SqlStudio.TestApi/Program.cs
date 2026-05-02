@@ -16,7 +16,9 @@ builder.Services.AddSqlStudio(options =>
     options.AppName = "Script Runner";
     options.Database = "LandFeesDB";
     options.ConnectionString = "data source=localhost;initial catalog=LandFeesDB;persist security info=True;TrustServerCertificate=True; user id=sa;password=Abc@1234;MultipleActiveResultSets=True;Max Pool Size=200;";
-    options.EnableSchemaLoad = false;
+    options.EnableSchemaLoad = true;
+    options.ExcludedSchemas = new List<string> { "HangFire" };
+    options.ExcludedObjects = new List<string> { "ApiLogs", "AppUsers" };
 });
 
 var app = builder.Build();

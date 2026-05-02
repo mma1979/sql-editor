@@ -47,6 +47,16 @@ namespace Mma.SqlStudio.SqlServer.Services
             try
             {
                 var results = await db.QueryAsync<SchemaItem>(sql);
+
+                if (_options.ExcludedSchemas != null && _options.ExcludedSchemas.Any())
+                {
+                    results = results.Where(r => !_options.ExcludedSchemas.Contains(r.SchemaName, StringComparer.OrdinalIgnoreCase));
+                }
+
+                if (_options.ExcludedObjects != null && _options.ExcludedObjects.Any())
+                {
+                    results = results.Where(r => !_options.ExcludedObjects.Contains(r.ObjectName, StringComparer.OrdinalIgnoreCase));
+                }
                 
                 return results.GroupBy(r => r.SchemaName)
                     .Select(g => new SchemaNode

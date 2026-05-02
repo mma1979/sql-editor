@@ -22,6 +22,8 @@ Mma.SqlStudio.SqlServer is a highly customizable, embeddable SQL Server Object E
         options.ConnectionString = "YourConnectionString";
         options.Database = "YourDatabase";
         options.EnableSchemaLoad = true; // Set to false to hide Object Explorer (default: true)
+        options.ExcludedSchemas = new List<string> { "guest", "temp" }; // Optional: schemas to exclude
+        options.ExcludedObjects = new List<string> { "Logs", "InternalTable" }; // Optional: objects to exclude
     });
     ```
 
