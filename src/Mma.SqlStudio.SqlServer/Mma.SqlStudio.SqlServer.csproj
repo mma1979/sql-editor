@@ -1,41 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Mma.SqlStudio.SqlServer</RootNamespace>
-    <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
-    
-    <!-- NuGet Package Properties -->
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>Mma.SqlStudio.SqlServer</PackageId>
-    <Version>1.1.0</Version>
-    <Authors>Mohammed Abdelhay</Authors>
-    <Description>A configurable Blazor Razor Class Library providing a SQL Server object explorer and query editor.</Description>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>icon.png</PackageIcon>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>Mma.SqlStudio.SqlServer</RootNamespace>
+		<AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
 
-  <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.72" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
-  </ItemGroup>
+		<!-- NuGet Package Properties -->
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>Mma.SqlStudio.SqlServer</PackageId>
+		<Version>1.1.0</Version>
+		<Authors>Mohammed Abdelhay</Authors>
+		<Description>A configurable Blazor Razor Class Library providing a SQL Server object explorer and query editor.</Description>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageProjectUrl>https://github.com/mma1979/Mma.SqlStudio.SqlServer</PackageProjectUrl>
+		<PackageOutputPath>.nuget</PackageOutputPath>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Dapper" Version="2.1.72" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Update="wwwroot\**\*" Pack="true" PackagePath="contentFiles\any\any\wwwroot\Mma.SqlStudio.SqlServer\;content\any\any\wwwroot\Mma.SqlStudio.SqlServer\" />
-  </ItemGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="\" />
-    <None Include="LICENSE" Pack="true" PackagePath="\" />
-    <None Include="icon.png" Pack="true" PackagePath="\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Update="wwwroot\**\*" Pack="true" PackagePath="contentFiles\any\any\wwwroot\Mma.SqlStudio.SqlServer\;content\any\any\wwwroot\Mma.SqlStudio.SqlServer\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+		<None Include="icon.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>
