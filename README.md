@@ -1,14 +1,12 @@
-<div align="center">
-  <img src="https://raw.githubusercontent.com/mma1979/sql-editor/main/src/Mma.SqlStudio.SqlServer/icon.png" alt="Mma.SqlStudio Logo" width="128" />
+# Mma.SqlStudio.SqlServer
 
-  # Mma.SqlStudio.SqlServer
+![Mma.SqlStudio Logo](https://raw.githubusercontent.com/mma1979/sql-editor/main/src/Mma.SqlStudio.SqlServer/icon.png)
 
-  **A modern, highly customizable, embeddable SQL Server Object Explorer and Query Editor for .NET.**
+**A modern, highly customizable, embeddable SQL Server Object Explorer and Query Editor for .NET.**
 
-  [![NuGet](https://img.shields.io/nuget/v/Mma.SqlStudio.SqlServer.svg?style=flat-square)](https://www.nuget.org/packages/Mma.SqlStudio.SqlServer)
-  [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0%20%7C%2010.0-blueviolet?style=flat-square)](#)
-  [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
-</div>
+[![NuGet](https://img.shields.io/nuget/v/Mma.SqlStudio.SqlServer.svg?style=flat-square)](https://www.nuget.org/packages/Mma.SqlStudio.SqlServer)
+[![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0%20%7C%2010.0-blueviolet?style=flat-square)](#)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
 ---
 
@@ -30,7 +28,7 @@ Mma.SqlStudio.SqlServer is packaged as a Razor Class Library (RCL), making it in
 Add the package to your project using the .NET CLI:
 
 ```bash
-dotnet add package Mma.SqlStudio.SqlServer --version 1.2.1
+dotnet add package Mma.SqlStudio.SqlServer --version 1.2.2
 ```
 
 ### 2. Configure Services
@@ -101,13 +99,8 @@ dotnet run
 
 ## 📸 Screenshots
 
-<details>
-<summary>Click to expand UI preview</summary>
-
 *(Add screenshots of your application here to show off the UI!)*
 > **Note**: Add a URL to your screenshot here: `![Object Explorer](url-to-image)`
-
-</details>
 
 ## 📝 License
 
