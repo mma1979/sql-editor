@@ -17,6 +17,7 @@ Mma.SqlStudio.SqlServer is a highly customizable, embeddable SQL Server Object E
    ```csharp
    builder.Services.AddRazorPages();
    builder.Services.AddSqlStudio(options => {
+       options.Route = "/sql-editor"; // Change to your preferred route
        options.ConnectionString = "YourConnectionString";
        options.Database = "YourDatabase";
    });

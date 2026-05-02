@@ -10,7 +10,9 @@ namespace Mma.SqlStudio.SqlServer.Extensions
     {
         public static IEndpointRouteBuilder MapSqlStudioEndpoints(this IEndpointRouteBuilder endpoints)
         {
-            var group = endpoints.MapGroup("/api/sqlstudio");
+            var options = endpoints.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Models.SqlStudioOptions>>().Value;
+            var apiPath = $"/api/{options.Route.TrimStart('/')}";
+            var group = endpoints.MapGroup(apiPath);
 
             group.MapGet("/schema", async (SchemaService schemaService) =>
             {

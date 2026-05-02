@@ -68,7 +68,7 @@
     async function loadSchema() {
         els.btnRefreshSchema.classList.add('spin');
         try {
-            const response = await fetch('/api/sqlstudio/schema');
+            const response = await fetch(`${window.SqlStudioApiUrl}/schema`);
             if (response.ok) {
                 const rawSchema = await response.json();
                 // Normalize schema so categories use 'children' instead of 'objects'
@@ -426,7 +426,7 @@
         els.resultsTbody.innerHTML = `<tr><td style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto"></div><br/>Executing command...</td></tr>`;
 
         try {
-            const response = await fetch('/api/sqlstudio/query', {
+            const response = await fetch(`${window.SqlStudioApiUrl}/query`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query: tab.content })

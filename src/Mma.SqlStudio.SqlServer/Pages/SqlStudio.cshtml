@@ -1,4 +1,7 @@
 @page "/sql-studio"
+@using Microsoft.Extensions.Options
+@using Mma.SqlStudio.SqlServer.Models
+@inject IOptions<SqlStudioOptions> SqlStudioOptions
 @model Mma.SqlStudio.SqlServer.Pages.SqlStudioModel
 @{
     Layout = null;
@@ -122,6 +125,9 @@
     </div>
 
     <!-- Scripts -->
+    <script>
+        window.SqlStudioApiUrl = '/api/@SqlStudioOptions.Value.Route.TrimStart('/')';
+    </script>
     <script src="~/_content/Mma.SqlStudio.SqlServer/js/sqlstudio.js"></script>
     <script src="~/_content/Mma.SqlStudio.SqlServer/js/fileHelper.js"></script>
 </body>

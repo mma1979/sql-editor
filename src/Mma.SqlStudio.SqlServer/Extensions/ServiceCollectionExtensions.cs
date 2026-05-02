@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Options;
 using Mma.SqlStudio.SqlServer.Models;
 using Mma.SqlStudio.SqlServer.Services;
 using System;
@@ -14,6 +16,12 @@ namespace Mma.SqlStudio.SqlServer.Extensions
 
             services.Configure(configureOptions);
 
+            services.AddOptions<RazorPagesOptions>()
+                .Configure<IOptions<SqlStudioOptions>>((options, sqlStudioOptions) =>
+                {
+                    options.Conventions.Add(new SqlStudioPageRouteModelConvention(sqlStudioOptions.Value.Route));
+                });
+
             services.AddScoped<SchemaService>();
 
             return services;
@@ -24,6 +32,12 @@ namespace Mma.SqlStudio.SqlServer.Extensions
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             services.Configure<SqlStudioOptions>(configuration.GetSection("SqlStudio"));
+
+            services.AddOptions<RazorPagesOptions>()
+                .Configure<IOptions<SqlStudioOptions>>((options, sqlStudioOptions) =>
+                {
+                    options.Conventions.Add(new SqlStudioPageRouteModelConvention(sqlStudioOptions.Value.Route));
+                });
 
             services.AddScoped<SchemaService>();
 
