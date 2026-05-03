@@ -16,7 +16,7 @@ Mma.SqlStudio.SqlServer is packaged as a Razor Class Library (RCL), making it in
 
 - 🗄️ **SQL Object Explorer**: Browse databases, schemas, tables, views, and stored procedures seamlessly.
 - ✍️ **Query Editor**: Execute queries with full syntax highlighting and a responsive results grid.
-- 🎨 **Modern UI**: Clean, responsive, and dynamic interface built with vanilla CSS. Dark mode supported!
+- 🎨 **Modern UI**: Clean, responsive, and dynamic interface built with vanilla CSS. Dark and Light mode supported!
 - 🔌 **Embeddable**: Drop into any ASP.NET Core application via Minimal APIs and Razor Pages in just a few lines of code.
 - ⚙️ **Highly Configurable**: Control routing, application naming, default connections, and schema loading.
 - 🔒 **Customizable Authorization**: Secure your SQL Studio instance by applying custom endpoint and page authorization filters, including built-in support for HTTP Basic Auth or your own custom logic.
@@ -28,7 +28,7 @@ Mma.SqlStudio.SqlServer is packaged as a Razor Class Library (RCL), making it in
 Add the package to your project using the .NET CLI:
 
 ```bash
-dotnet add package Mma.SqlStudio.SqlServer --version 1.2.2
+dotnet add package Mma.SqlStudio.SqlServer --version 1.3.0
 ```
 
 ### 2. Configure Services
@@ -48,6 +48,7 @@ builder.Services.AddSqlStudio(options =>
     
     // Optional: UI Configuration
     options.EnableSchemaLoad = true; // Set to false to hide the Object Explorer
+    options.Theme = Theme.Dark; // Options: Theme.Dark, Theme.Light
     
     // Optional: Object Filtering
     options.ExcludedSchemas = ["guest", "temp"]; 

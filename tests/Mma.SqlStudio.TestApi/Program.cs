@@ -19,6 +19,8 @@ builder.Services.AddSqlStudio(options =>
     options.EnableSchemaLoad = true;
     options.ExcludedSchemas = new List<string> { "HangFire" };
     options.ExcludedObjects = new List<string> { "ApiLogs", "AppUsers" };
+
+    options.Theme = Theme.Dark;
     
     // Example Auth Filter: HTTP Basic Auth (admin:password)
     options.AuthFilter = ctx =>

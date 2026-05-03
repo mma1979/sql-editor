@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="~/_content/Mma.SqlStudio.SqlServer/css/sqlstudio.css" />
 </head>
 <body>
-    <div class="page">
+    <div class="page @(SqlStudioOptions.Value.Theme.Equals("Light", StringComparison.OrdinalIgnoreCase) ? "theme-light" : "")">
         <div class="top-bar">
             <button class="icon-btn toggle-sidebar" id="btn-toggle-sidebar" title="Toggle Object Explorer" @(!SqlStudioOptions.Value.EnableSchemaLoad ? "disabled" : "")>
                 <i class="bi bi-layout-sidebar-inset"></i>

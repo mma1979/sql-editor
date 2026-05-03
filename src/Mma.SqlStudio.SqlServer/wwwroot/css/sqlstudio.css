@@ -44,6 +44,28 @@
     flex-direction: column;
 }
 
+.page.theme-light {
+    --surface: #ffffff;
+    --surface-dim: #f8f9fa;
+    --surface-bright: #ffffff;
+    --surface-container-lowest: #ffffff;
+    --surface-container-low: #f8f9fa;
+    --surface-container: #f1f3f5;
+    --surface-container-high: #e9ecef;
+    --surface-container-highest: #dee2e6;
+    
+    --on-surface: #212529;
+    --on-surface-variant: #495057;
+    
+    --primary: #0055cc;
+    --on-primary: #ffffff;
+    --primary-container: #e6f0ff;
+    --on-primary-container: #003380;
+    
+    --outline: #adb5bd;
+    --outline-variant: #ced4da;
+}
+
 /* Scrollbars */
 ::-webkit-scrollbar {
     width: 8px;
