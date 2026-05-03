@@ -102,6 +102,11 @@ dotnet run
 
 *(Add screenshots of your application here to show off the UI!)*
 > **Note**: Add a URL to your screenshot here: `![Object Explorer](url-to-image)`
+**Dark Theme**
+![dark theme](https://raw.githubusercontent.com/mma1979/sql-editor/main/src/Mma.SqlStudio.SqlServer/dark.png)
+
+**Light Theme**
+![dark theme](https://raw.githubusercontent.com/mma1979/sql-editor/main/src/Mma.SqlStudio.SqlServer/light.png)
 
 ## 📝 License
 

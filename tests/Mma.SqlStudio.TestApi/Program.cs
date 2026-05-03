@@ -13,14 +13,14 @@ builder.Services.AddRazorPages();
 builder.Services.AddSqlStudio(options =>
 {
     options.Route = "/script-runner";
-    options.AppName = "Script Runner";
+    //options.AppName = "Script Runner";
     options.Database = "LandFeesDB";
     options.ConnectionString = "data source=localhost;initial catalog=LandFeesDB;persist security info=True;TrustServerCertificate=True; user id=sa;password=Abc@1234;MultipleActiveResultSets=True;Max Pool Size=200;";
     options.EnableSchemaLoad = true;
-    options.ExcludedSchemas = new List<string> { "HangFire" };
+    options.ExcludedSchemas = new List<string> { "HangFire","farz", "meeting", "Objection", "TEMPInvoice", "Violation" };
     options.ExcludedObjects = new List<string> { "ApiLogs", "AppUsers" };
 
-    options.Theme = Theme.Dark;
+    options.Theme = Theme.Light;
     
     // Example Auth Filter: HTTP Basic Auth (admin:password)
     options.AuthFilter = ctx =>
