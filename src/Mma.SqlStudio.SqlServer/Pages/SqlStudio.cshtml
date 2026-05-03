@@ -27,6 +27,9 @@
                 <span class="app-name">@SqlStudioOptions.Value.AppName</span>
             </div>
             <div class="top-actions">
+                <button class="icon-btn" id="btn-toggle-theme" title="Toggle Theme">
+                    <i class="bi @(SqlStudioOptions.Value.Theme.Equals("Light", StringComparison.OrdinalIgnoreCase) ? "bi-moon-fill" : "bi-sun-fill")" id="theme-icon"></i>
+                </button>
                 <button class="primary" id="btn-run" disabled>
                     <i class="bi bi-play-fill" id="run-icon"></i>
                     <span class="spinner-border spinner-border-sm mr-2" id="run-spinner" style="display:none;"></span>

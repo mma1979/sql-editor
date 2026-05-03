@@ -28,7 +28,7 @@ Mma.SqlStudio.SqlServer is packaged as a Razor Class Library (RCL), making it in
 Add the package to your project using the .NET CLI:
 
 ```bash
-dotnet add package Mma.SqlStudio.SqlServer --version 1.3.0
+dotnet add package Mma.SqlStudio.SqlServer --version 1.3.1
 ```
 
 ### 2. Configure Services
@@ -100,8 +100,6 @@ dotnet run
 
 ## 📸 Screenshots
 
-*(Add screenshots of your application here to show off the UI!)*
-> **Note**: Add a URL to your screenshot here: `![Object Explorer](url-to-image)`
 **Dark Theme**
 ![dark theme](https://raw.githubusercontent.com/mma1979/sql-editor/main/src/Mma.SqlStudio.SqlServer/dark.png)
 

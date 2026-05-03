@@ -36,12 +36,15 @@
         statusRowsCount: document.getElementById('status-rows-count'),
         statusState: document.getElementById('status-state'),
         sidebar: document.getElementById('sidebar'),
-        btnToggleSidebar: document.getElementById('btn-toggle-sidebar')
+        btnToggleSidebar: document.getElementById('btn-toggle-sidebar'),
+        btnToggleTheme: document.getElementById('btn-toggle-theme'),
+        themeIcon: document.getElementById('theme-icon')
     };
 
     // --- Initialization ---
     function init() {
         bindEvents();
+        applyThemeState();
         if (window.EnableSchemaLoad) {
             loadSchema();
             applySidebarState();
@@ -68,6 +71,7 @@
         els.btnCopy.addEventListener('click', copySql);
         els.btnExportCsv.addEventListener('click', exportCsv);
         els.btnToggleSidebar.addEventListener('click', toggleSidebar);
+        if (els.btnToggleTheme) els.btnToggleTheme.addEventListener('click', toggleTheme);
     }
 
     function toggleSidebar() {
@@ -89,6 +93,45 @@
             els.sidebar.classList.add('collapsed');
             const icon = els.btnToggleSidebar.querySelector('i');
             icon.classList.replace('bi-layout-sidebar-inset', 'bi-layout-sidebar');
+        }
+    }
+
+    function toggleTheme() {
+        const pageEl = document.querySelector('.page');
+        const isLight = pageEl.classList.toggle('theme-light');
+        
+        if (els.themeIcon) {
+            if (isLight) {
+                els.themeIcon.classList.remove('bi-sun-fill');
+                els.themeIcon.classList.add('bi-moon-fill');
+            } else {
+                els.themeIcon.classList.remove('bi-moon-fill');
+                els.themeIcon.classList.add('bi-sun-fill');
+            }
+        }
+        
+        localStorage.setItem('sqlstudio_theme', isLight ? 'Light' : 'Dark');
+    }
+
+    function applyThemeState() {
+        const savedTheme = localStorage.getItem('sqlstudio_theme');
+        if (savedTheme) {
+            const isLight = savedTheme === 'Light';
+            const pageEl = document.querySelector('.page');
+            
+            if (isLight) {
+                pageEl.classList.add('theme-light');
+                if (els.themeIcon) {
+                    els.themeIcon.classList.remove('bi-sun-fill');
+                    els.themeIcon.classList.add('bi-moon-fill');
+                }
+            } else {
+                pageEl.classList.remove('theme-light');
+                if (els.themeIcon) {
+                    els.themeIcon.classList.remove('bi-moon-fill');
+                    els.themeIcon.classList.add('bi-sun-fill');
+                }
+            }
         }
     }
 
